@@ -1,6 +1,6 @@
 {
   "name": "legatus",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "type": "module",
   "description": "Legatus is a TypeScript Discord moderation bot built without a database.",
@@ -19,11 +19,11 @@
   "dependencies": {
     "discord.js": "^14.26.4",
     "dotenv": "^17.4.2",
+    "typescript": "^7.0.2",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^26.1.1",
-    "tsx": "^4.23.0",
-    "typescript": "^7.0.2"
+    "tsx": "^4.23.0"
   }
 }
