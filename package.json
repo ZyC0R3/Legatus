@@ -5,11 +5,12 @@
   "type": "module",
   "description": "Legatus is a TypeScript Discord moderation bot built without a database.",
   "engines": {
-    "node": ">=25.9.0"
+    "node": ">=24.7.0"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsx watch src/index.ts",
+    "prestart": "npm run build",
     "register:commands": "tsx src/register-commands.ts",
     "start": "node --enable-source-maps dist/index.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
