@@ -21,6 +21,7 @@ export function resolveGuildConfig(config: BotConfig, guildId: string): GuildCon
     commandRoleIds: mergeLists(config.global.commandRoleIds, guildConfig.commandRoleIds),
     respondRoleIds: mergeLists(config.global.respondRoleIds, guildConfig.respondRoleIds),
     moderationMentionRoleIds: mergeLists(config.global.moderationMentionRoleIds, guildConfig.moderationMentionRoleIds),
+    moderationNoPingRoleIds: mergeLists(config.global.moderationNoPingRoleIds, guildConfig.moderationNoPingRoleIds),
     ignoredRoleIds: mergeLists(config.global.ignoredRoleIds, guildConfig.ignoredRoleIds),
     ignoredUserIds: mergeLists(config.global.ignoredUserIds, guildConfig.ignoredUserIds),
     accessPasswordPhrase: guildConfig.accessPasswordPhrase ?? config.global.accessPasswordPhrase,

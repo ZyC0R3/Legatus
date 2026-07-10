@@ -34,6 +34,7 @@ export interface GuildConfig {
   commandRoleIds: string[];
   respondRoleIds: string[];
   moderationMentionRoleIds: string[];
+  moderationNoPingRoleIds: string[];
   ignoredRoleIds: string[];
   ignoredUserIds: string[];
   accessPasswordPhrase: string;
@@ -75,6 +76,7 @@ export const defaultGuildConfig: GuildConfig = {
   commandRoleIds: [],
   respondRoleIds: [],
   moderationMentionRoleIds: [],
+  moderationNoPingRoleIds: [],
   ignoredRoleIds: [],
   ignoredUserIds: [],
   accessPasswordPhrase: "",
@@ -124,6 +126,7 @@ export const guildConfigSchema = z.object({
   commandRoleIds: z.array(z.string().min(1)).default([]),
   respondRoleIds: z.array(z.string().min(1)).default([]),
   moderationMentionRoleIds: z.array(z.string().min(1)).default([]),
+  moderationNoPingRoleIds: z.array(z.string().min(1)).default([]),
   ignoredRoleIds: z.array(z.string().min(1)).default([]),
   ignoredUserIds: z.array(z.string().min(1)).default([]),
   accessPasswordPhrase: z.string().default(""),

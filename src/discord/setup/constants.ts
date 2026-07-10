@@ -26,6 +26,7 @@ export const triggerMessagesModalId = "legatus-setup-trigger-messages-modal";
 export const headModeratorRolesId = "009721ecd9804c708ffab429dd4eee49";
 export const moderatorRolesId = "187aa8ea3eb54c6dbc175ad3ff0c0c25";
 export const moderationMentionRolesId = "ed489388a818419a956fc72338dd8a6a";
+export const moderationNoPingRolesId = "661c39d142a0421ba77f5a4e616b27b0";
 export const ignoredRolesId = "685b552968bb4c59855e0e8b610a39f5";
 
 export const channelSelectId = "8de26c4207884736a5e1e4cd2ab7c9d6";

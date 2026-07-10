@@ -2,8 +2,8 @@ import {ActionRowBuilder, ButtonBuilder, ButtonStyle, ContainerBuilder, MessageF
 import {LabelBuilder, ModalBuilder} from "@discordjs/builders";
 import type {BotConfig, GuildConfig} from "../../../config/schema.js";
 import {applyGuildSetupConfig, getGuildSetupConfig, saveBotConfig} from "../../../config/store.js";
-import {messageDeletionWindowSelectId, moderationConfigModalId, moderationTimeoutSelectId, setupButtonIds} from "../constants.js";
-import {buildDurationSelect} from "../helpers.js";
+import {messageDeletionWindowSelectId, moderationConfigModalId, moderationNoPingRolesId, moderationTimeoutSelectId, setupButtonIds} from "../constants.js";
+import {buildDurationSelect, buildRoleSelect, selectedRoleIds} from "../helpers.js";
 import {updateWizardMessages} from "../session.js";
 import type {SetupSession} from "../types.js";
 
@@ -48,6 +48,14 @@ export function buildModerationConfigModal(config: GuildConfig): ModalBuilder {
             {label: "15 Mins", value: 15 * 60 * 1000},
             {label: "1 Hour", value: 60 * 60 * 1000}
           ])
+        )
+    )
+    .addLabelComponents(
+      new LabelBuilder()
+        .setLabel("DO NOT PING")
+        .setDescription("The roles selected in this section will not be pinged by the bot.")
+        .setRoleSelectMenuComponent(
+          buildRoleSelect(moderationNoPingRolesId, config.moderationNoPingRoleIds)
         )
     );
 
@@ -112,7 +120,8 @@ export async function handleModerationModal(
 
   applyGuildSetupConfig(botConfig, interaction.guildId, {
     moderationTimeoutMs: timeoutMs,
-    messageDeletionWindowMs: deletionWindowMs
+    messageDeletionWindowMs: deletionWindowMs,
+    moderationNoPingRoleIds: selectedRoleIds(interaction.fields.getSelectedRoles(moderationNoPingRolesId))
   });
   await saveBotConfig(botConfig);
 

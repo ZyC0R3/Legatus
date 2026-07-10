@@ -29,7 +29,8 @@ export type ModerationTriggerSnapshot = {
 };
 
 function getModeratorRoleIds(config: GuildConfig): string[] {
-  return [...new Set([...config.commandRoleIds, ...config.respondRoleIds])];
+  const excludedRoleIds = new Set(config.moderationNoPingRoleIds);
+  return [...new Set([...config.commandRoleIds, ...config.respondRoleIds])].filter((roleId) => !excludedRoleIds.has(roleId));
 }
 
 export function buildModeratorPing(config: GuildConfig): string {

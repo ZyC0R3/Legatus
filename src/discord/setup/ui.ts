@@ -15,6 +15,7 @@ export function buildSetupCompleteEmbed(config: GuildConfig): EmbedBuilder {
     {name: "Head Moderator Roles", value: formatRoleList(config.commandRoleIds), inline: false},
     {name: "Moderator Roles", value: formatRoleList(config.respondRoleIds), inline: false},
     {name: "Allowed Roles for Moderation Mention", value: formatRoleList(config.moderationMentionRoleIds), inline: false},
+    {name: "Do Not Ping Roles", value: formatRoleList(config.moderationNoPingRoleIds), inline: false},
     {name: "Ignored Roles", value: formatRoleList(config.ignoredRoleIds), inline: false},
     {
       name: "Access Password",
