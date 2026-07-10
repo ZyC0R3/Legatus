@@ -237,7 +237,16 @@ export async function startModerationThread(
     type: ChannelType.PrivateThread,
     invitable: false,
     reason: threadNamePrefix
-  }).catch(() => null);
+  }).catch((error) => {
+    console.error(`Failed to create moderation thread in channel ${parentChannel.id} for ${threadNamePrefix}.`, {
+      guildId: trigger.guild.id,
+      channelId: parentChannel.id,
+      channelName: parentChannel.name,
+      targetId: target?.id ?? null,
+      error
+    });
+    return null;
+  });
 
   if (!thread) {
     return null;
