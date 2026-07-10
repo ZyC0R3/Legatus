@@ -183,6 +183,12 @@ async function resolveModerationThreadParent(
       if (!target || canTargetViewChannel(configuredChannel, target)) {
         return configuredChannel;
       }
+    } else if (configuredChannel) {
+      console.error(`Configured moderation channel ${config.moderationChannelId} is not a supported thread parent.`, {
+        guildId: trigger.guild.id,
+        channelId: configuredChannel.id,
+        channelType: configuredChannel.type
+      });
     }
   }
 
@@ -191,6 +197,14 @@ async function resolveModerationThreadParent(
 
   if (sourceChannel?.type === ChannelType.GuildText) {
     return sourceChannel;
+  }
+
+  if (sourceChannel) {
+    console.error(`Source channel ${trigger.channelId} is not a supported thread parent.`, {
+      guildId: trigger.guild.id,
+      channelId: sourceChannel.id,
+      channelType: sourceChannel.type
+    });
   }
 
   return null;
@@ -228,6 +242,44 @@ export async function startModerationThread(
 ): Promise<ThreadChannel | null> {
   const parentChannel = await resolveModerationThreadParent(trigger, config, target);
   if (!parentChannel) {
+    console.error(`No valid thread parent channel could be resolved for ${threadNamePrefix}.`, {
+      guildId: trigger.guild.id,
+      configuredModerationChannelId: config.moderationChannelId,
+      sourceChannelId: trigger.channelId,
+      targetId: target?.id ?? null
+    });
+    return null;
+  }
+
+  const botMember = trigger.guild.members.me;
+  if (!botMember) {
+    console.error(`Cannot create moderation thread in ${parentChannel.id} because the bot member is unavailable.`, {
+      guildId: trigger.guild.id,
+      channelId: parentChannel.id,
+      channelName: parentChannel.name,
+      targetId: target?.id ?? null
+    });
+    return null;
+  }
+
+  const permissions = parentChannel.permissionsFor(botMember);
+  if (!permissions?.has(PermissionFlagsBits.ViewChannel) || !permissions?.has(PermissionFlagsBits.SendMessages) || !permissions?.has(PermissionFlagsBits.CreatePrivateThreads)) {
+    console.error(`Missing permissions to create a private thread in channel ${parentChannel.id}.`, {
+      guildId: trigger.guild.id,
+      channelId: parentChannel.id,
+      channelName: parentChannel.name,
+      requiredPermissions: [
+        "ViewChannel",
+        "SendMessages",
+        "CreatePrivateThreads"
+      ],
+      missingPermissions: {
+        viewChannel: permissions?.has(PermissionFlagsBits.ViewChannel) ?? false,
+        sendMessages: permissions?.has(PermissionFlagsBits.SendMessages) ?? false,
+        createPrivateThreads: permissions?.has(PermissionFlagsBits.CreatePrivateThreads) ?? false
+      },
+      targetId: target?.id ?? null
+    });
     return null;
   }
 
@@ -237,7 +289,7 @@ export async function startModerationThread(
     type: ChannelType.PrivateThread,
     invitable: false,
     reason: threadNamePrefix
-  }).catch((error) => {
+  }).catch((error: unknown) => {
     console.error(`Failed to create moderation thread in channel ${parentChannel.id} for ${threadNamePrefix}.`, {
       guildId: trigger.guild.id,
       channelId: parentChannel.id,
