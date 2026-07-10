@@ -6,6 +6,7 @@ import {z} from "zod";
 
 export type ProfanityLevel = "low" | "medium" | "high" | "critical";
 export type ProfanityLoggingLevel = "none" | "violations" | "violations-and-moderations" | "all";
+export type AccessJoinLeaveLoggingMode = "none" | "join" | "leave" | "both";
 
 export interface ProfanityRuleConfig {
   muteLengthMs: number | null;
@@ -38,17 +39,24 @@ export interface GuildConfig {
   commandRoleIds: string[];
   respondRoleIds: string[];
   moderationMentionRoleIds: string[];
+  joinRoleId: string | null;
   moderationNoPingRoleIds: string[];
   ignoredRoleIds: string[];
   ignoredUserIds: string[];
   accessPasswordPhrase: string;
   accessPasswordRoleId: string | null;
+  accessPasswordRemoveRoleId: string | null;
   accessPasswordChannelId: string | null;
   accessEmojiValue: string;
   accessEmojiRoleId: string | null;
+  accessEmojiRemoveRoleId: string | null;
   accessEmojiChannelId: string | null;
   accessEmojiMessageId: string | null;
   accessEmojiMessageContent: string;
+  accessWelcomeMessage: string;
+  accessWelcomeMessageChannelId: string | null;
+  accessJoinLeaveLogging: AccessJoinLeaveLoggingMode;
+  accessJoinLeaveLoggingChannelId: string | null;
   profanityLowTerms: string;
   profanityMediumTerms: string;
   profanityHighTerms: string;
@@ -80,17 +88,24 @@ export const defaultGuildConfig: GuildConfig = {
   commandRoleIds: [],
   respondRoleIds: [],
   moderationMentionRoleIds: [],
+  joinRoleId: null,
   moderationNoPingRoleIds: [],
   ignoredRoleIds: [],
   ignoredUserIds: [],
   accessPasswordPhrase: "",
   accessPasswordRoleId: null,
+  accessPasswordRemoveRoleId: null,
   accessPasswordChannelId: null,
   accessEmojiValue: "",
   accessEmojiRoleId: null,
+  accessEmojiRemoveRoleId: null,
   accessEmojiChannelId: null,
   accessEmojiMessageId: null,
   accessEmojiMessageContent: "",
+  accessWelcomeMessage: "",
+  accessWelcomeMessageChannelId: null,
+  accessJoinLeaveLogging: "none",
+  accessJoinLeaveLoggingChannelId: null,
   profanityLowTerms: "arse ,arsehole ,ass ,asses ,asshat ,asshead ,asswipe ,asswad ,asshole ,assholes ,assface ,assclown ,assmonkey ,assmunch ,assmuncher ,assbag ,bastard ,bastards ,bellend ,bitch ,bitches ,bitching ,bitchy ,bitchass ,bollock ,bollocks ,bugger ,buggered ,bullcrap ,bullshit ,bullshits ,bumhole ,butthead ,butthole ,crap ,crappy ,damn ,dammit ,damnit ,dick ,dicks ,dickhead ,dickheads ,dickwad ,dickweed ,dimwit ,dipshit ,douche ,douchebag ,dumbass ,dumbasses ,dumbshit ,fart ,farty ,feck ,frigg ,frigga ,frigging ,friggin ,fuck ,fucked ,fucker ,fuckers ,fucking ,fucks ,fuckwit ,fuckwitt ,fuckoff ,fuckup ,fuckwad ,fuckface ,fuckhead ,hell ,hells ,horseshit ,jackass ,jackhole ,jerk ,knob ,knobhead ,knobend ,knobead ,moron ,nimrod ,nob ,nobhead ,numbnuts ,pillock ,piss ,pissed ,pisser ,pisses ,pissing ,pisshead ,poo ,poop ,prick ,pricks ,shit ,shitbag ,shitbags ,shitface ,shithead ,shithole ,shits ,shitter ,shitters ,shitting ,shitty ,shiz ,slag ,slapper ,smeg ,sob ,twat ,wanker ,wanker ,whore ,whorebag",
   profanityMediumTerms: "anal ,analannie ,analprobe ,analsex ,anus ,asscock ,asswhore ,barenaked ,bdsm ,big breasts ,big tits ,bigbreasts ,bigtits ,bitchtit ,black cock ,blackcock ,blow j ,blow job ,blow your l ,blow your load ,blowjob ,blowjobs ,boner ,boners ,boob ,boobies ,boobs ,booby ,boobz ,breastjob ,breastlover ,breastman ,butt plug ,buttplug ,camslut ,camwhore ,clit ,clitface ,clitfuck ,clitoris ,clitorus ,clits ,clitty ,cock ,cock-head ,cock-sucker ,cockbite ,cockblock ,cockblocker ,cockburger ,cockcowboy ,cockface ,cockfight ,cockfucker ,cockhead ,cockholster ,cockknob ,cockknocker ,cocklicker ,cocklover ,cockmonkey ,cockmunch ,cockmuncher ,cocknob ,cocknose ,cocknugget ,cockqueen ,cockrider ,cocks ,cockshit ,cocksman ,cocksmith ,cocksmoker ,cocksucer ,cocksuck ,cocksucked ,cocksucker ,cocksucking ,cocksucks ,cocksuka ,cocksukka ,cocktease ,cocky ,crackwhore ,cum ,cumbubble ,cumdumpster ,cumfest ,cumjockey ,cumm ,cummer ,cummin ,cumming ,cumquat ,cumqueen ,cums ,cumshot ,cumshots ,cumslut ,cumstain ,cumtart ,cunt ,cunteyed ,cuntface ,cuntfuck ,cuntfucker ,cunthole ,cunthunter ,cuntlick ,cuntlicker ,cuntlicking ,cuntrag ,cunts ,cuntslut ,cuntsucker ,cuntz ,cybersex ,destroyyourpussy ,dick pic ,dildo ,dildos ,easyslut ,eatpussy ,ejaculate ,ejaculated ,ejaculates ,ejaculating ,ejaculation ,escort ,fetish ,fisting ,foot fetish ,footfetish ,fuckwhore ,genital ,genitals ,getiton ,hardcoresex ,hentai ,hooker ,hookers ,horny ,hotpussy ,hotsex ,labia ,makemecum ,masturbate ,masturbating ,masturbation ,milf ,naked ,nastyslut ,nastywhore ,nipple ,nipples ,nsfw ,nsfw images ,nude ,oral ,orally ,orgasm ,orgasmic ,orgasms ,penis ,penises ,penislick ,phone sex ,porn ,porno ,pornography ,pornos ,prostitute ,pussy ,pussyeater ,pussylicker ,pussylover ,rimjob ,rimming ,semen ,sex ,sexual ,sextoy ,sextoys ,sexy ,shaved pussy ,slut ,slutbag ,sluts ,slutty ,slutwhore ,tit ,titjob ,tits ,titties ,titty ,tittyfuck ,vagina ,vaginal ,whore ,whorebag ,whoreface ,whores ,xxx",
   profanityHighTerms: "abuse ,abuser ,ableist ,bitchslap ,bully ,bullying ,child groomer ,childgroomer ,creep ,creepy ,date rape ,daterape ,dox ,doxx ,doxxing ,dumbfuck ,eat my ass ,eatmyass ,fatass ,fatfuck ,fatfucker ,groom ,groomed ,groomer ,grooming ,harass ,harassed ,harasser ,harassing ,harassment ,hate you ,hitman ,how to kill ,how to murder ,kill ,killer ,killing ,kills ,killthem ,killyourself ,lynch ,molest ,molestation ,molester ,murder ,murderer ,murdering ,paedophile ,pedo ,pedobear ,pedophile ,pedophilia ,pedophiliac ,rape ,raped ,raper ,raping ,rapist ,retard ,retarded ,retards ,retardz ,reetard ,ritard ,rtard ,rtards ,r-tard ,r-tards ,self harm ,self-harm ,sexual harassment ,shoot you ,stab you ,suicide ,swat ,swatting ,threat ,threaten ,threatened ,threatening ,violent ,violence",
@@ -130,17 +145,24 @@ export const guildConfigSchema = z.object({
   commandRoleIds: z.array(z.string().min(1)).default([]),
   respondRoleIds: z.array(z.string().min(1)).default([]),
   moderationMentionRoleIds: z.array(z.string().min(1)).default([]),
+  joinRoleId: z.string().min(1).nullable().default(null),
   moderationNoPingRoleIds: z.array(z.string().min(1)).default([]),
   ignoredRoleIds: z.array(z.string().min(1)).default([]),
   ignoredUserIds: z.array(z.string().min(1)).default([]),
   accessPasswordPhrase: z.string().default(""),
   accessPasswordRoleId: z.string().min(1).nullable().default(null),
+  accessPasswordRemoveRoleId: z.string().min(1).nullable().default(null),
   accessPasswordChannelId: z.string().min(1).nullable().default(null),
   accessEmojiValue: z.string().default(""),
   accessEmojiRoleId: z.string().min(1).nullable().default(null),
+  accessEmojiRemoveRoleId: z.string().min(1).nullable().default(null),
   accessEmojiChannelId: z.string().min(1).nullable().default(null),
   accessEmojiMessageId: z.string().min(1).nullable().default(null),
   accessEmojiMessageContent: z.string().default(""),
+  accessWelcomeMessage: z.string().default(""),
+  accessWelcomeMessageChannelId: z.string().min(1).nullable().default(null),
+  accessJoinLeaveLogging: z.enum(["none", "join", "leave", "both"]).default("none"),
+  accessJoinLeaveLoggingChannelId: z.string().min(1).nullable().default(null),
   profanityLowTerms: z.string().default("arse ,arsehole ,ass ,asses ,asshat ,asshead ,asswipe ,asswad ,asshole ,assholes ,assface ,assclown ,assmonkey ,assmunch ,assmuncher ,assbag ,bastard ,bastards ,bellend ,bitch ,bitches ,bitching ,bitchy ,bitchass ,bollock ,bollocks ,bugger ,buggered ,bullcrap ,bullshit ,bullshits ,bumhole ,butthead ,butthole ,crap ,crappy ,damn ,dammit ,damnit ,dick ,dicks ,dickhead ,dickheads ,dickwad ,dickweed ,dimwit ,dipshit ,douche ,douchebag ,dumbass ,dumbasses ,dumbshit ,fart ,farty ,feck ,frigg ,frigga ,frigging ,friggin ,fuck ,fucked ,fucker ,fuckers ,fucking ,fucks ,fuckwit ,fuckwitt ,fuckoff ,fuckup ,fuckwad ,fuckface ,fuckhead ,hell ,hells ,horseshit ,jackass ,jackhole ,jerk ,knob ,knobhead ,knobend ,knobead ,moron ,nimrod ,nob ,nobhead ,numbnuts ,pillock ,piss ,pissed ,pisser ,pisses ,pissing ,pisshead ,poo ,poop ,prick ,pricks ,shit ,shitbag ,shitbags ,shitface ,shithead ,shithole ,shits ,shitter ,shitters ,shitting ,shitty ,shiz ,slag ,slapper ,smeg ,sob ,twat ,wanker ,wanker ,whore ,whorebag"),
   profanityMediumTerms: z.string().default("anal ,analannie ,analprobe ,analsex ,anus ,asscock ,asswhore ,barenaked ,bdsm ,big breasts ,big tits ,bigbreasts ,bigtits ,bitchtit ,black cock ,blackcock ,blow j ,blow job ,blow your l ,blow your load ,blowjob ,blowjobs ,boner ,boners ,boob ,boobies ,boobs ,booby ,boobz ,breastjob ,breastlover ,breastman ,butt plug ,buttplug ,camslut ,camwhore ,clit ,clitface ,clitfuck ,clitoris ,clitorus ,clits ,clitty ,cock ,cock-head ,cock-sucker ,cockbite ,cockblock ,cockblocker ,cockburger ,cockcowboy ,cockface ,cockfight ,cockfucker ,cockhead ,cockholster ,cockknob ,cockknocker ,cocklicker ,cocklover ,cockmonkey ,cockmunch ,cockmuncher ,cocknob ,cocknose ,cocknugget ,cockqueen ,cockrider ,cocks ,cockshit ,cocksman ,cocksmith ,cocksmoker ,cocksucer ,cocksuck ,cocksucked ,cocksucker ,cocksucking ,cocksucks ,cocksuka ,cocksukka ,cocktease ,cocky ,crackwhore ,cum ,cumbubble ,cumdumpster ,cumfest ,cumjockey ,cumm ,cummer ,cummin ,cumming ,cumquat ,cumqueen ,cums ,cumshot ,cumshots ,cumslut ,cumstain ,cumtart ,cunt ,cunteyed ,cuntface ,cuntfuck ,cuntfucker ,cunthole ,cunthunter ,cuntlick ,cuntlicker ,cuntlicking ,cuntrag ,cunts ,cuntslut ,cuntsucker ,cuntz ,cybersex ,destroyyourpussy ,dick pic ,dildo ,dildos ,easyslut ,eatpussy ,ejaculate ,ejaculated ,ejaculates ,ejaculating ,ejaculation ,escort ,fetish ,fisting ,foot fetish ,footfetish ,fuckwhore ,genital ,genitals ,getiton ,hardcoresex ,hentai ,hooker ,hookers ,horny ,hotpussy ,hotsex ,labia ,makemecum ,masturbate ,masturbating ,masturbation ,milf ,naked ,nastyslut ,nastywhore ,nipple ,nipples ,nsfw ,nsfw images ,nude ,oral ,orally ,orgasm ,orgasmic ,orgasms ,penis ,penises ,penislick ,phone sex ,porn ,porno ,pornography ,pornos ,prostitute ,pussy ,pussyeater ,pussylicker ,pussylover ,rimjob ,rimming ,semen ,sex ,sexual ,sextoy ,sextoys ,sexy ,shaved pussy ,slut ,slutbag ,sluts ,slutty ,slutwhore ,tit ,titjob ,tits ,titties ,titty ,tittyfuck ,vagina ,vaginal ,whore ,whorebag ,whoreface ,whores ,xxx"),
   profanityHighTerms: z.string().default("abuse ,abuser ,ableist ,bitchslap ,bully ,bullying ,child groomer ,childgroomer ,creep ,creepy ,date rape ,daterape ,dox ,doxx ,doxxing ,dumbfuck ,eat my ass ,eatmyass ,fatass ,fatfuck ,fatfucker ,groom ,groomed ,groomer ,grooming ,harass ,harassed ,harasser ,harassing ,harassment ,hate you ,hitman ,how to kill ,how to murder ,kill ,killer ,killing ,kills ,killthem ,killyourself ,lynch ,molest ,molestation ,molester ,murder ,murderer ,murdering ,paedophile ,pedo ,pedobear ,pedophile ,pedophilia ,pedophiliac ,rape ,raped ,raper ,raping ,rapist ,retard ,retarded ,retards ,retardz ,reetard ,ritard ,rtard ,rtards ,r-tard ,r-tards ,self harm ,self-harm ,sexual harassment ,shoot you ,stab you ,suicide ,swat ,swatting ,threat ,threaten ,threatened ,threatening ,violent ,violence"),

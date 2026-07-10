@@ -59,6 +59,22 @@ export function buildSingleRoleSelect(customId: string, defaultRoleId: string | 
   return builder;
 }
 
+// buildOptionalSingleRoleSelect defines this module's public behavior or core flow.
+export function buildOptionalSingleRoleSelect(customId: string, defaultRoleId: string | null): RoleSelectMenuBuilder {
+  const builder = new RoleSelectMenuBuilder()
+    .setCustomId(customId)
+    .setPlaceholder("Select one role")
+    .setMinValues(0)
+    .setMaxValues(1)
+    .setRequired(false);
+
+  if (defaultRoleId) {
+    builder.setDefaultRoles(defaultRoleId);
+  }
+
+  return builder;
+}
+
 // buildTextChannelSelect defines this module's public behavior or core flow.
 export function buildTextChannelSelect(customId: string, defaultChannelId: string | null, required: boolean): ChannelSelectMenuBuilder {
   const builder = new ChannelSelectMenuBuilder()

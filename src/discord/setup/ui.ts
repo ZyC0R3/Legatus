@@ -16,24 +16,41 @@ import {formatChannel, formatDuration, formatRoleList} from "./helpers.js";
 export function buildSetupCompleteEmbed(config: GuildConfig): EmbedBuilder {
   const passwordScope = config.accessPasswordChannelId ? `<#${config.accessPasswordChannelId}>` : "Any text channel";
   const emojiScope = config.accessEmojiChannelId ? `<#${config.accessEmojiChannelId}>` : "Not set";
+  const welcomeScope = config.accessWelcomeMessageChannelId ? `<#${config.accessWelcomeMessageChannelId}>` : "Trigger channel";
+  const joinLeaveLogScope = config.accessJoinLeaveLoggingChannelId ? `<#${config.accessJoinLeaveLoggingChannelId}>` : "Not set";
   const fields = [
     {name: "Head Moderator Roles", value: formatRoleList(config.commandRoleIds), inline: false},
     {name: "Moderator Roles", value: formatRoleList(config.respondRoleIds), inline: false},
     {name: "Allowed Roles for Moderation Mention", value: formatRoleList(config.moderationMentionRoleIds), inline: false},
+    {name: "Join Role", value: config.joinRoleId ? `<@&${config.joinRoleId}>` : "Not set yet", inline: false},
     {name: "Do Not Ping Roles", value: formatRoleList(config.moderationNoPingRoleIds), inline: false},
     {name: "Ignored Roles", value: formatRoleList(config.ignoredRoleIds), inline: false},
     {
       name: "Access Password",
       value: config.accessPasswordPhrase
-        ? `Configured (channel: ${passwordScope}, role: ${config.accessPasswordRoleId ? `<@&${config.accessPasswordRoleId}>` : "Not set"})`
+        ? `Configured (channel: ${passwordScope}, add role: ${config.accessPasswordRoleId ? `<@&${config.accessPasswordRoleId}>` : "Not set"}, remove role: ${config.accessPasswordRemoveRoleId ? `<@&${config.accessPasswordRemoveRoleId}>` : "Not set"})`
         : "Not set",
       inline: false
     },
     {
       name: "Access Emoji",
       value: config.accessEmojiValue
-        ? `Configured (${config.accessEmojiValue}) in ${emojiScope}, role: ${config.accessEmojiRoleId ? `<@&${config.accessEmojiRoleId}>` : "Not set"}`
+        ? `Configured (${config.accessEmojiValue}) in ${emojiScope}, add role: ${config.accessEmojiRoleId ? `<@&${config.accessEmojiRoleId}>` : "Not set"}, remove role: ${config.accessEmojiRemoveRoleId ? `<@&${config.accessEmojiRemoveRoleId}>` : "Not set"}`
         : "Not set",
+      inline: false
+    },
+    {
+      name: "Access Welcome Message",
+      value: config.accessWelcomeMessage
+        ? `Configured in ${welcomeScope}`
+        : "Not set",
+      inline: false
+    },
+    {
+      name: "Access Join/Leave Logging",
+      value: config.accessJoinLeaveLogging !== "none"
+        ? `${config.accessJoinLeaveLogging} in ${joinLeaveLogScope}`
+        : "Disabled",
       inline: false
     },
     {name: "Mode", value: config.moderationChannelMode ?? "Not set yet", inline: false},

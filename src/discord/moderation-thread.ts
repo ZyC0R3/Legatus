@@ -401,3 +401,31 @@ export function resolveTargetUserIdFromThreadName(threadName: string): string | 
   const match = threadName.match(/([0-9]{17,20})$/);
   return match?.[1] ?? null;
 }
+
+// isBotOwnedModerationThreadMessage defines this module's public behavior or core flow.
+export function isBotOwnedModerationThreadMessage(message: Message, config: GuildConfig, botUserId: string | null): boolean {
+  if (!botUserId || !message.inGuild() || !message.channel.isThread()) {
+    return false;
+  }
+
+  const thread = message.channel;
+  if (thread.type !== ChannelType.PrivateThread) {
+    return false;
+  }
+
+  if (thread.ownerId !== botUserId) {
+    return false;
+  }
+
+  if (config.moderationChannelId && thread.parentId !== config.moderationChannelId) {
+    return false;
+  }
+
+  const knownBotModerationPrefixes = [
+    "Moderation Action - ",
+    "Profanity Action - ",
+    "Honey Pot - "
+  ];
+
+  return knownBotModerationPrefixes.some((prefix) => thread.name.startsWith(prefix));
+}

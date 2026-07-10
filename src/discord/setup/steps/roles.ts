@@ -6,8 +6,8 @@ import {ActionRowBuilder, ButtonBuilder, ButtonStyle, ContainerBuilder, MessageF
 import {LabelBuilder, ModalBuilder, TextDisplayBuilder as ModalTextDisplayBuilder} from "@discordjs/builders";
 import type {BotConfig, GuildConfig} from "../../../config/schema.js";
 import {applyGuildSetupConfig, getGuildSetupConfig, saveBotConfig} from "../../../config/store.js";
-import {headModeratorRolesId, ignoredRolesId, moderationMentionRolesId, moderatorRolesId, setupButtonIds, setupModalId} from "../constants.js";
-import {buildRoleSelect, selectedRoleIds} from "../helpers.js";
+import {headModeratorRolesId, ignoredRolesId, joinLeaveRoleModalId, joinRoleId, moderationMentionRolesId, moderatorRolesId, setupButtonIds, setupModalId} from "../constants.js";
+import {buildOptionalSingleRoleSelect, buildRoleSelect, selectedRoleIds, selectedSingleRoleId} from "../helpers.js";
 import type {SetupSession} from "../types.js";
 import {updateWizardMessages} from "../session.js";
 
@@ -28,6 +28,7 @@ export function buildRolesContainer(phase: string): ContainerBuilder {
     container.addActionRowComponents(
       new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
         new ButtonBuilder().setStyle(ButtonStyle.Success).setLabel("Set Roles").setCustomId(setupButtonIds.setRoles),
+        new ButtonBuilder().setStyle(ButtonStyle.Success).setLabel("Join Role").setCustomId(setupButtonIds.setJoinRole),
         new ButtonBuilder().setStyle(ButtonStyle.Primary).setLabel("Next").setCustomId(setupButtonIds.next),
         new ButtonBuilder().setStyle(ButtonStyle.Danger).setLabel("Cancel").setCustomId(setupButtonIds.cancelRoles)
       )
@@ -68,20 +69,46 @@ export function buildRoleModal(config: GuildConfig): ModalBuilder {
     );
 }
 
+// buildJoinLeaveRoleModal defines this module's public behavior or core flow.
+export function buildJoinLeaveRoleModal(config: GuildConfig): ModalBuilder {
+  return new ModalBuilder()
+    .setCustomId(joinLeaveRoleModalId)
+    .setTitle("Join & Leave")
+    .addTextDisplayComponents(
+      new ModalTextDisplayBuilder().setContent("This function is not tied to any other function, and will run regardless of access controls.")
+    )
+    .addLabelComponents(
+      new LabelBuilder()
+        .setLabel("Role to be added when user joins")
+        .setRoleSelectMenuComponent(buildOptionalSingleRoleSelect(joinRoleId, config.joinRoleId))
+    );
+}
+
 // handleRolesButton defines this module's public behavior or core flow.
 export async function handleRolesButton(interaction: ButtonInteraction, botConfig: BotConfig, guildId: string, phase: string): Promise<boolean> {
-  if (interaction.customId !== setupButtonIds.setRoles) {
-    return false;
-  }
+  if (interaction.customId === setupButtonIds.setRoles) {
+    if (phase !== "roles") {
+      await interaction.reply({content: "Complete the previous setup step first.", flags: MessageFlags.Ephemeral});
+      return true;
+    }
 
-  if (phase !== "roles") {
-    await interaction.reply({content: "Complete the previous setup step first.", flags: MessageFlags.Ephemeral});
+    const config = getGuildSetupConfig(botConfig, guildId);
+    await interaction.showModal(buildRoleModal(config));
     return true;
   }
 
-  const config = getGuildSetupConfig(botConfig, guildId);
-  await interaction.showModal(buildRoleModal(config));
-  return true;
+  if (interaction.customId === setupButtonIds.setJoinRole) {
+    if (phase !== "roles") {
+      await interaction.reply({content: "Complete the previous setup step first.", flags: MessageFlags.Ephemeral});
+      return true;
+    }
+
+    const config = getGuildSetupConfig(botConfig, guildId);
+    await interaction.showModal(buildJoinLeaveRoleModal(config));
+    return true;
+  }
+
+  return false;
 }
 
 // handleRolesModal defines this module's public behavior or core flow.
@@ -91,27 +118,45 @@ export async function handleRolesModal(
   session: SetupSession,
   buildComponents: () => ContainerBuilder[]
 ): Promise<boolean> {
-  if (interaction.customId !== setupModalId) {
-    return false;
-  }
+  if (interaction.customId === setupModalId) {
+    if (session.phase !== "roles") {
+      await interaction.reply({content: "Complete the previous setup step first.", flags: MessageFlags.Ephemeral});
+      return true;
+    }
 
-  if (session.phase !== "roles") {
-    await interaction.reply({content: "Complete the previous setup step first.", flags: MessageFlags.Ephemeral});
+    await interaction.deferReply({flags: MessageFlags.Ephemeral});
+
+    applyGuildSetupConfig(botConfig, interaction.guildId, {
+      commandRoleIds: selectedRoleIds(interaction.fields.getSelectedRoles(headModeratorRolesId)),
+      respondRoleIds: selectedRoleIds(interaction.fields.getSelectedRoles(moderatorRolesId)),
+      moderationMentionRoleIds: selectedRoleIds(interaction.fields.getSelectedRoles(moderationMentionRolesId)),
+      ignoredRoleIds: selectedRoleIds(interaction.fields.getSelectedRoles(ignoredRolesId))
+    });
+    await saveBotConfig(botConfig);
+
+    // Save only; phase changes should happen only via the explicit Next button.
+    await updateWizardMessages(interaction, session, buildComponents());
+    await interaction.deleteReply().catch(() => undefined);
     return true;
   }
 
-  await interaction.deferReply({flags: MessageFlags.Ephemeral});
+  if (interaction.customId === joinLeaveRoleModalId) {
+    if (session.phase !== "roles") {
+      await interaction.reply({content: "Complete the previous setup step first.", flags: MessageFlags.Ephemeral});
+      return true;
+    }
 
-  applyGuildSetupConfig(botConfig, interaction.guildId, {
-    commandRoleIds: selectedRoleIds(interaction.fields.getSelectedRoles(headModeratorRolesId)),
-    respondRoleIds: selectedRoleIds(interaction.fields.getSelectedRoles(moderatorRolesId)),
-    moderationMentionRoleIds: selectedRoleIds(interaction.fields.getSelectedRoles(moderationMentionRolesId)),
-    ignoredRoleIds: selectedRoleIds(interaction.fields.getSelectedRoles(ignoredRolesId))
-  });
-  await saveBotConfig(botConfig);
+    await interaction.deferReply({flags: MessageFlags.Ephemeral});
 
-  session.phase = "access";
-  await updateWizardMessages(interaction, session, buildComponents());
-  await interaction.deleteReply().catch(() => undefined);
-  return true;
+    applyGuildSetupConfig(botConfig, interaction.guildId, {
+      joinRoleId: selectedSingleRoleId(interaction.fields.getSelectedRoles(joinRoleId))
+    });
+    await saveBotConfig(botConfig);
+
+    await updateWizardMessages(interaction, session, buildComponents());
+    await interaction.deleteReply().catch(() => undefined);
+    return true;
+  }
+
+  return false;
 }

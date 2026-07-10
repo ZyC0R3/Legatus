@@ -7,9 +7,10 @@ import {slashCommandMap} from "../commands/index.js";
 import {type BotConfig, type GuildConfig} from "../config/schema.js";
 import {resolveGuildConfig} from "../config/store.js";
 import {canUseCommands, shouldBypassProfanityFilter, shouldIgnoreMember, shouldRespondToMessages} from "../permissions.js";
-import {handleAccessEmojiReaction, handleAccessPasswordMessage} from "./access-control.js";
+import {handleAccessEmojiReaction, handleAccessMemberJoin, handleAccessMemberLeave, handleAccessPasswordMessage} from "./access-control.js";
 import {handlePendingModerationPromptResponse, handleHoneyPotAction, handleHoneyPotMessage, handleModerationMention} from "./honey-pot.js";
 import {logViolationMessage} from "./logging.js";
+import {isBotOwnedModerationThreadMessage} from "./moderation-thread.js";
 import {applyProfanityActions} from "./profanity-enforcement.js";
 import {ModerationEngineManager} from "../moderation/manager.js";
 import {buildRulePreview} from "../moderation/types.js";
@@ -114,6 +115,10 @@ async function handleSlashCommand(interaction: Interaction, config: GuildConfig,
 // handleMessage defines this module's public behavior or core flow.
 async function handleMessage(message: Message, client: Client, config: GuildConfig, moderationEngineManager: ModerationEngineManager): Promise<void> {
   if (!message.inGuild() || !message.member || message.author.bot) {
+    return;
+  }
+
+  if (isBotOwnedModerationThreadMessage(message, config, client.user?.id ?? null)) {
     return;
   }
 
@@ -250,6 +255,24 @@ export function bindDiscordHandlers(client: Client, botConfig: BotConfig): void 
       }
     } catch (error) {
       console.error("Unhandled Discord reaction handler error.", error);
+    }
+  });
+
+  client.on(Events.GuildMemberAdd, async (member) => {
+    try {
+      const guildConfig = resolveGuildConfig(botConfig, member.guild.id);
+      await handleAccessMemberJoin(member, guildConfig);
+    } catch (error) {
+      console.error("Unhandled Discord member join handler error.", error);
+    }
+  });
+
+  client.on(Events.GuildMemberRemove, async (member) => {
+    try {
+      const guildConfig = resolveGuildConfig(botConfig, member.guild.id);
+      await handleAccessMemberLeave(member, guildConfig);
+    } catch (error) {
+      console.error("Unhandled Discord member leave handler error.", error);
     }
   });
 }
