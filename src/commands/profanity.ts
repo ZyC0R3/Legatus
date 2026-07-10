@@ -1,3 +1,7 @@
+/**
+ * Module: profanity
+ * Purpose: Coordinates this part of the Legatus bot flow.
+ */
 import {SlashCommandBuilder, type ChatInputCommandInteraction} from "discord.js";
 import type {BotConfig} from "../config/schema.js";
 import {postProfanityPanel} from "../discord/profanity.js";

@@ -1,10 +1,16 @@
+/**
+ * Module: access-control
+ * Purpose: Coordinates this part of the Legatus bot flow.
+ */
 import {type GuildMember, type Message, type MessageReaction, type PartialMessageReaction} from "discord.js";
 import type {GuildConfig} from "../config/schema.js";
 
+// normalizeValue defines this module's public behavior or core flow.
 function normalizeValue(value: string): string {
   return value.trim().toLowerCase();
 }
 
+// emojiMatches defines this module's public behavior or core flow.
 function emojiMatches(configuredEmoji: string, reaction: MessageReaction | PartialMessageReaction): boolean {
   const normalizedConfigured = configuredEmoji.trim();
   if (!normalizedConfigured) {
@@ -36,6 +42,7 @@ function emojiMatches(configuredEmoji: string, reaction: MessageReaction | Parti
   return false;
 }
 
+// applyRole defines this module's public behavior or core flow.
 async function applyRole(member: GuildMember, roleId: string): Promise<void> {
   if (member.roles.cache.has(roleId)) {
     return;
@@ -44,6 +51,7 @@ async function applyRole(member: GuildMember, roleId: string): Promise<void> {
   await member.roles.add(roleId, "Legatus access control trigger").catch(() => undefined);
 }
 
+// handleAccessPasswordMessage defines this module's public behavior or core flow.
 export async function handleAccessPasswordMessage(message: Message, config: GuildConfig): Promise<boolean> {
   if (!message.inGuild() || !message.member || message.author.bot) {
     return false;
@@ -68,6 +76,7 @@ export async function handleAccessPasswordMessage(message: Message, config: Guil
   return true;
 }
 
+// handleAccessEmojiReaction defines this module's public behavior or core flow.
 export async function handleAccessEmojiReaction(
   reaction: MessageReaction | PartialMessageReaction,
   user: {id: string; bot: boolean},

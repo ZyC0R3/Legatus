@@ -1,16 +1,23 @@
+/**
+ * Module: logging
+ * Purpose: Coordinates this part of the Legatus bot flow.
+ */
 import {Colors, EmbedBuilder, type Guild, type GuildTextBasedChannel, type Message} from "discord.js";
 import {type GuildConfig} from "../config/schema.js";
 import {formatDurationLabel} from "../moderation/types.js";
 import {type ProfanityLevel} from "../config/schema.js";
 
+// shouldLogViolation defines this module's public behavior or core flow.
 function shouldLogViolation(level: GuildConfig["profanityLogging"]["level"]): boolean {
   return level === "violations" || level === "violations-and-moderations" || level === "all";
 }
 
+// shouldLogModeration defines this module's public behavior or core flow.
 function shouldLogModeration(level: GuildConfig["profanityLogging"]["level"]): boolean {
   return level === "violations-and-moderations" || level === "all";
 }
 
+// resolveLogChannel defines this module's public behavior or core flow.
 async function resolveLogChannel(guild: Guild, config: GuildConfig): Promise<GuildTextBasedChannel | null> {
   const channelId = config.profanityLogging.channelId;
   if (!channelId) {
@@ -31,6 +38,7 @@ type LogPayload = {
   embeds: EmbedBuilder[];
 };
 
+// sendLog defines this module's public behavior or core flow.
 async function sendLog(guild: Guild, config: GuildConfig, payload: LogPayload): Promise<void> {
   const channel = await resolveLogChannel(guild, config);
   if (!channel) {
@@ -40,6 +48,7 @@ async function sendLog(guild: Guild, config: GuildConfig, payload: LogPayload): 
   await channel.send({embeds: payload.embeds}).catch(() => undefined);
 }
 
+// colorForSeverity defines this module's public behavior or core flow.
 function colorForSeverity(severity: ProfanityLevel): number {
   if (severity === "critical") {
     return Colors.DarkRed;
@@ -56,6 +65,7 @@ function colorForSeverity(severity: ProfanityLevel): number {
   return Colors.Yellow;
 }
 
+// colorForModerationAction defines this module's public behavior or core flow.
 function colorForModerationAction(content: string): number {
   const normalized = content.toLowerCase();
 
@@ -82,6 +92,7 @@ function colorForModerationAction(content: string): number {
   return Colors.NotQuiteBlack;
 }
 
+// buildViolationEmbed defines this module's public behavior or core flow.
 function buildViolationEmbed(message: Message, matchedWord: string, severity: ProfanityLevel, actionSummary: string): EmbedBuilder {
   return new EmbedBuilder()
     .setColor(colorForSeverity(severity))
@@ -96,6 +107,7 @@ function buildViolationEmbed(message: Message, matchedWord: string, severity: Pr
     .setTimestamp();
 }
 
+// buildModerationActionEmbed defines this module's public behavior or core flow.
 function buildModerationActionEmbed(description: string): EmbedBuilder {
   return new EmbedBuilder()
     .setColor(colorForModerationAction(description))
@@ -104,6 +116,7 @@ function buildModerationActionEmbed(description: string): EmbedBuilder {
     .setTimestamp();
 }
 
+// logViolationMessage defines this module's public behavior or core flow.
 export async function logViolationMessage(
   message: Message,
   config: GuildConfig,
@@ -120,6 +133,7 @@ export async function logViolationMessage(
   });
 }
 
+// logModerationAction defines this module's public behavior or core flow.
 export async function logModerationAction(
   guild: Guild,
   config: GuildConfig,

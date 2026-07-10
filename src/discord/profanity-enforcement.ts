@@ -1,15 +1,21 @@
+/**
+ * Module: profanity-enforcement
+ * Purpose: Coordinates this part of the Legatus bot flow.
+ */
 import {type GuildConfig} from "../config/schema.js";
 import {type ModerationDetectionResult, buildRulePreview} from "../moderation/types.js";
 import {openModerationThreadForViolation} from "./honey-pot.js";
 import {formatDurationLabel} from "../moderation/types.js";
 import {shouldBypassProfanityFilter} from "../permissions.js";
 
+// pushAction defines this module's public behavior or core flow.
 function pushAction(actions: string[], value: string): void {
   if (!actions.includes(value)) {
     actions.push(value);
   }
 }
 
+// applyProfanityActions defines this module's public behavior or core flow.
 export async function applyProfanityActions(
   message: import("discord.js").Message,
   config: GuildConfig,

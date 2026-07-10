@@ -1,13 +1,19 @@
+/**
+ * Module: store
+ * Purpose: Coordinates this part of the Legatus bot flow.
+ */
 import {mkdir, readFile, writeFile} from "node:fs/promises";
 import {dirname, join} from "node:path";
 import {botConfigSchema, defaultBotConfig, type BotConfig, type GuildConfig} from "./schema.js";
 
 const configFilePath = join(process.cwd(), "data", "config.json");
 
+// mergeLists defines this module's public behavior or core flow.
 function mergeLists(...lists: Array<readonly string[]>): string[] {
   return [...new Set(lists.flat().filter(Boolean))];
 }
 
+// resolveGuildConfig defines this module's public behavior or core flow.
 export function resolveGuildConfig(config: BotConfig, guildId: string): GuildConfig {
   const guildConfig = config.guilds[guildId];
 
@@ -54,10 +60,12 @@ export function resolveGuildConfig(config: BotConfig, guildId: string): GuildCon
   };
 }
 
+// getGuildSetupConfig defines this module's public behavior or core flow.
 export function getGuildSetupConfig(config: BotConfig, guildId: string | null): GuildConfig {
   return guildId ? resolveGuildConfig(config, guildId) : config.global;
 }
 
+// applyGuildSetupConfig defines this module's public behavior or core flow.
 export function applyGuildSetupConfig(config: BotConfig, guildId: string | null, patch: Partial<GuildConfig>): GuildConfig {
   if (!guildId) {
     throw new Error("Cannot apply guild setup config without a guild ID.");
@@ -72,11 +80,13 @@ export function applyGuildSetupConfig(config: BotConfig, guildId: string | null,
   return nextConfig;
 }
 
+// writeConfigFile defines this module's public behavior or core flow.
 async function writeConfigFile(config: BotConfig): Promise<void> {
   await mkdir(dirname(configFilePath), {recursive: true});
   await writeFile(configFilePath, `${JSON.stringify(config, null, 2)}\n`, "utf8");
 }
 
+// loadBotConfig defines this module's public behavior or core flow.
 export async function loadBotConfig(): Promise<BotConfig> {
   await mkdir(dirname(configFilePath), {recursive: true});
 
@@ -94,6 +104,7 @@ export async function loadBotConfig(): Promise<BotConfig> {
   }
 }
 
+// saveBotConfig defines this module's public behavior or core flow.
 export async function saveBotConfig(config: BotConfig): Promise<void> {
   await writeConfigFile(botConfigSchema.parse(config));
 }

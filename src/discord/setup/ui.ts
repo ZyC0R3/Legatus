@@ -1,3 +1,7 @@
+/**
+ * Module: ui
+ * Purpose: Coordinates this part of the Legatus bot flow.
+ */
 import {ContainerBuilder, EmbedBuilder} from "discord.js";
 import type {GuildConfig} from "../../config/schema.js";
 import type {SetupPhase} from "./types.js";
@@ -8,6 +12,7 @@ import {buildTriggersContainer} from "./steps/triggers.js";
 import {buildAccessContainer} from "./steps/access.js";
 import {formatChannel, formatDuration, formatRoleList} from "./helpers.js";
 
+// buildSetupCompleteEmbed defines this module's public behavior or core flow.
 export function buildSetupCompleteEmbed(config: GuildConfig): EmbedBuilder {
   const passwordScope = config.accessPasswordChannelId ? `<#${config.accessPasswordChannelId}>` : "Any text channel";
   const emojiScope = config.accessEmojiChannelId ? `<#${config.accessEmojiChannelId}>` : "Not set";
@@ -55,6 +60,7 @@ export function buildSetupCompleteEmbed(config: GuildConfig): EmbedBuilder {
     .addFields(...fields);
 }
 
+// buildWizardComponents defines this module's public behavior or core flow.
 export function buildWizardComponents(phase: SetupPhase): ContainerBuilder[] {
   return [
     buildRolesContainer(phase),

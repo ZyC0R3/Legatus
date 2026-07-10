@@ -1,8 +1,13 @@
+/**
+ * Module: engine.test
+ * Purpose: Coordinates this part of the Legatus bot flow.
+ */
 import test from "node:test";
 import assert from "node:assert/strict";
 import {defaultGuildConfig, type GuildConfig} from "../config/schema.js";
 import {buildModerationEngine} from "./engine.js";
 
+// configForTest defines this module's public behavior or core flow.
 function configForTest(patch: Partial<GuildConfig>): GuildConfig {
   return {
     ...defaultGuildConfig,

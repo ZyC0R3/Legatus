@@ -1,3 +1,7 @@
+/**
+ * Module: engine
+ * Purpose: Coordinates this part of the Legatus bot flow.
+ */
 import {type GuildConfig, type ProfanityLevel} from "../config/schema.js";
 import {BKTree, boundedLevenshtein} from "./bk-tree.js";
 import {foldLeetToken, normalizeTerm, normalizeText, squashRepeats} from "./normalize.js";
@@ -26,6 +30,7 @@ export interface ModerationEngine {
   evaluate(message: string): ModerationDetectionResult;
 }
 
+// parseTerms defines this module's public behavior or core flow.
 function parseTerms(raw: string): string[] {
   const trimmed = raw.trim();
   if (!trimmed) {
@@ -38,6 +43,7 @@ function parseTerms(raw: string): string[] {
     .filter((part) => part.length > 0);
 }
 
+// parseRegexRule defines this module's public behavior or core flow.
 function parseRegexRule(entry: string): {source: string; regex: RegExp} | null {
   if (!entry.startsWith("re:")) {
     return null;
@@ -68,6 +74,7 @@ function parseRegexRule(entry: string): {source: string; regex: RegExp} | null {
   }
 }
 
+// fuzzyThreshold defines this module's public behavior or core flow.
 function fuzzyThreshold(tokenLength: number): number {
   if (tokenLength >= 10) {
     return 2;
@@ -78,6 +85,7 @@ function fuzzyThreshold(tokenLength: number): number {
   return 0;
 }
 
+// termListForLevel defines this module's public behavior or core flow.
 function termListForLevel(config: GuildConfig, level: ProfanityLevel): string {
   if (level === "low") {
     return config.profanityLowTerms;
@@ -91,6 +99,7 @@ function termListForLevel(config: GuildConfig, level: ProfanityLevel): string {
   return config.profanityCriticalTerms;
 }
 
+// buildLevelIndex defines this module's public behavior or core flow.
 function buildLevelIndex(rawTerms: string[]): LevelIndex {
   const words = new Set<string>();
   const phrasesByFirstToken = new Map<string, PhraseEntry[]>();
@@ -159,6 +168,7 @@ function buildLevelIndex(rawTerms: string[]): LevelIndex {
   };
 }
 
+// matchedResult defines this module's public behavior or core flow.
 function matchedResult(
   message: string,
   normalizedMessage: string,
@@ -177,6 +187,7 @@ function matchedResult(
   };
 }
 
+// buildModerationEngine defines this module's public behavior or core flow.
 export function buildModerationEngine(config: GuildConfig): ModerationEngine {
   const enabledLevels = new Set(config.profanityActiveLevels);
 

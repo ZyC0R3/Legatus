@@ -1,5 +1,10 @@
+/**
+ * Module: client
+ * Purpose: Coordinates this part of the Legatus bot flow.
+ */
 import {Client, GatewayIntentBits, Options, Partials} from "discord.js";
 
+// createDiscordClient defines this module's public behavior or core flow.
 export function createDiscordClient(): Client {
   return new Client({
     intents: [

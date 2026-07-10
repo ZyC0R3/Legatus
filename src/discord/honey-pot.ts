@@ -1,3 +1,7 @@
+/**
+ * Module: honey-pot
+ * Purpose: Coordinates this part of the Legatus bot flow.
+ */
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -51,6 +55,7 @@ type PendingModerationPrompt = {
 
 const pendingModerationPrompts = new Map<string, PendingModerationPrompt>();
 
+// canModerateTarget defines this module's public behavior or core flow.
 function canModerateTarget(actor: GuildMember, target: GuildMember): boolean {
   if (actor.id === target.id) {
     return false;
@@ -59,6 +64,7 @@ function canModerateTarget(actor: GuildMember, target: GuildMember): boolean {
   return actor.roles.highest.position > target.roles.highest.position;
 }
 
+// canUseModerationButtons defines this module's public behavior or core flow.
 function canUseModerationButtons(member: GuildMember, config: GuildConfig): boolean {
   const allowedRoleIds = new Set([...config.commandRoleIds, ...config.respondRoleIds]);
 
@@ -69,10 +75,12 @@ function canUseModerationButtons(member: GuildMember, config: GuildConfig): bool
   return member.roles.cache.some((role) => allowedRoleIds.has(role.id));
 }
 
+// canUseThreadActions defines this module's public behavior or core flow.
 function canUseThreadActions(member: GuildMember, config: GuildConfig): boolean {
   return canUseModerationButtons(member, config);
 }
 
+// canUseModerationMentions defines this module's public behavior or core flow.
 function canUseModerationMentions(member: GuildMember, config: GuildConfig): boolean {
   if (config.moderationMentionRoleIds.length === 0) {
     return true;
@@ -81,6 +89,7 @@ function canUseModerationMentions(member: GuildMember, config: GuildConfig): boo
   return member.roles.cache.some((role) => config.moderationMentionRoleIds.includes(role.id));
 }
 
+// buildModerationPrompt defines this module's public behavior or core flow.
 function buildModerationPrompt(config: GuildConfig): string {
   return [
     "I need more information before I can continue.",
@@ -89,6 +98,7 @@ function buildModerationPrompt(config: GuildConfig): string {
   ].join("\n");
 }
 
+// resolveReplyTargetMessage defines this module's public behavior or core flow.
 async function resolveReplyTargetMessage(message: Message): Promise<Message | null> {
   if (!message.reference) {
     return null;
@@ -97,15 +107,18 @@ async function resolveReplyTargetMessage(message: Message): Promise<Message | nu
   return message.fetchReference().catch(() => null);
 }
 
+// getTargetUserIdFromMessage defines this module's public behavior or core flow.
 function getTargetUserIdFromMessage(message: Message): string {
   return message.author.id;
 }
 
+// extractMessageId defines this module's public behavior or core flow.
 function extractMessageId(content: string): string | null {
   const match = content.match(/\b(\d{19})\b/);
   return match?.[1] ?? null;
 }
 
+// registerModerationPrompt defines this module's public behavior or core flow.
 export function registerModerationPrompt(promptMessageId: string, originalMessageId: string, channelId: string, timeoutMs = 60_000): void {
   const existingPrompt = pendingModerationPrompts.get(channelId);
   if (existingPrompt) {
@@ -125,6 +138,7 @@ export function registerModerationPrompt(promptMessageId: string, originalMessag
   });
 }
 
+// isPendingModerationPrompt defines this module's public behavior or core flow.
 export function isPendingModerationPrompt(channelId: string): boolean {
   const prompt = pendingModerationPrompts.get(channelId);
   if (!prompt) {
@@ -140,6 +154,7 @@ export function isPendingModerationPrompt(channelId: string): boolean {
   return true;
 }
 
+// clearModerationPrompt defines this module's public behavior or core flow.
 export function clearModerationPrompt(channelId: string): void {
   const prompt = pendingModerationPrompts.get(channelId);
   if (!prompt) {
@@ -150,6 +165,7 @@ export function clearModerationPrompt(channelId: string): void {
   pendingModerationPrompts.delete(channelId);
 }
 
+// getPendingModerationPrompt defines this module's public behavior or core flow.
 export function getPendingModerationPrompt(channelId: string): PendingModerationPrompt | null {
   const prompt = pendingModerationPrompts.get(channelId);
   if (!prompt) {
@@ -164,6 +180,7 @@ export function getPendingModerationPrompt(channelId: string): PendingModeration
   return prompt;
 }
 
+// runModerationActionOnTargetMessage defines this module's public behavior or core flow.
 export async function runModerationActionOnTargetMessage(targetMessage: Message, config: GuildConfig): Promise<ThreadChannel | null> {
   const trigger = createModerationTriggerSnapshot(targetMessage);
   if (!trigger) {
@@ -230,6 +247,7 @@ export async function runModerationActionOnTargetMessage(targetMessage: Message,
   return thread;
 }
 
+// openModerationThreadForViolation defines this module's public behavior or core flow.
 export async function openModerationThreadForViolation(message: Message, config: GuildConfig, severity: string): Promise<ThreadChannel | null> {
   if (!message.inGuild()) {
     return null;
@@ -271,6 +289,7 @@ export async function openModerationThreadForViolation(message: Message, config:
   return thread;
 }
 
+// handlePendingModerationPromptResponse defines this module's public behavior or core flow.
 export async function handlePendingModerationPromptResponse(message: Message, config: GuildConfig): Promise<boolean> {
   if (!message.inGuild() || message.author.bot || !message.guild) {
     return false;
@@ -330,6 +349,7 @@ export async function handlePendingModerationPromptResponse(message: Message, co
   return true;
 }
 
+// applyThreadAction defines this module's public behavior or core flow.
 async function applyThreadAction(interaction: ButtonInteraction, config: GuildConfig, action: "lock" | "close" | "delete"): Promise<boolean> {
   if (!interaction.inGuild()) {
     return false;
@@ -383,6 +403,7 @@ async function applyThreadAction(interaction: ButtonInteraction, config: GuildCo
   return true;
 }
 
+// handleHoneyPotMessage defines this module's public behavior or core flow.
 export async function handleHoneyPotMessage(message: Message, config: GuildConfig): Promise<boolean> {
   if (!message.inGuild() || !message.member || message.author.bot) {
     return false;
@@ -436,6 +457,7 @@ export async function handleHoneyPotMessage(message: Message, config: GuildConfi
   return true;
 }
 
+// handleModerationMention defines this module's public behavior or core flow.
 export async function handleModerationMention(message: Message, config: GuildConfig, botUserId: string | null): Promise<boolean> {
   if (!message.inGuild() || !message.member || message.author.bot || !botUserId) {
     return false;
@@ -525,6 +547,7 @@ export async function handleModerationMention(message: Message, config: GuildCon
   return true;
 }
 
+// handleHoneyPotAction defines this module's public behavior or core flow.
 export async function handleHoneyPotAction(interaction: ButtonInteraction, config: GuildConfig): Promise<boolean> {
   if (!interaction.inGuild()) {
     return false;

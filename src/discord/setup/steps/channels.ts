@@ -1,3 +1,7 @@
+/**
+ * Module: channels
+ * Purpose: Coordinates this part of the Legatus bot flow.
+ */
 import {ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, ContainerBuilder, MessageFlags, TextDisplayBuilder, TextInputStyle, type ButtonInteraction, type MessageActionRowComponentBuilder, type ModalSubmitInteraction} from "discord.js";
 import {ChannelSelectMenuBuilder, LabelBuilder, ModalBuilder, TextDisplayBuilder as ModalTextDisplayBuilder, TextInputBuilder} from "@discordjs/builders";
 import type {BotConfig, GuildConfig} from "../../../config/schema.js";
@@ -8,6 +12,7 @@ import {updateWizardMessages} from "../session.js";
 import type {SetupSession} from "../types.js";
 import {getGuildSetupConfig} from "../../../config/store.js";
 
+// buildChannelsContainer defines this module's public behavior or core flow.
 export function buildChannelsContainer(phase: string): ContainerBuilder {
   const container = new ContainerBuilder()
     .addTextDisplayComponents(
@@ -33,6 +38,7 @@ export function buildChannelsContainer(phase: string): ContainerBuilder {
   return container;
 }
 
+// buildExistingChannelModal defines this module's public behavior or core flow.
 export function buildExistingChannelModal(): ModalBuilder {
   return new ModalBuilder()
     .setCustomId(existingChannelModalId)
@@ -58,6 +64,7 @@ export function buildExistingChannelModal(): ModalBuilder {
     );
 }
 
+// buildCreateChannelModal defines this module's public behavior or core flow.
 export function buildCreateChannelModal(): ModalBuilder {
   return new ModalBuilder()
     .setCustomId(createChannelModalId)
@@ -93,6 +100,7 @@ export function buildCreateChannelModal(): ModalBuilder {
     );
 }
 
+// handleChannelsButton defines this module's public behavior or core flow.
 export async function handleChannelsButton(interaction: ButtonInteraction, phase: string): Promise<boolean> {
   if (interaction.customId !== setupButtonIds.useExistingChannel && interaction.customId !== setupButtonIds.createNewChannel) {
     return false;
@@ -112,6 +120,7 @@ export async function handleChannelsButton(interaction: ButtonInteraction, phase
   return true;
 }
 
+// handleChannelsModal defines this module's public behavior or core flow.
 export async function handleChannelsModal(
   interaction: ModalSubmitInteraction,
   botConfig: BotConfig,

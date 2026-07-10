@@ -1,3 +1,7 @@
+/**
+ * Module: reset
+ * Purpose: Coordinates this part of the Legatus bot flow.
+ */
 import {MessageFlags, SlashCommandBuilder, type ChatInputCommandInteraction} from "discord.js";
 import {defaultGuildConfig, type BotConfig} from "../config/schema.js";
 import {applyGuildSetupConfig, saveBotConfig} from "../config/store.js";

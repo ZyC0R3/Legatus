@@ -1,3 +1,7 @@
+/**
+ * Module: types
+ * Purpose: Coordinates this part of the Legatus bot flow.
+ */
 import {type ProfanityLevel, type ProfanityRuleConfig} from "../config/schema.js";
 
 export type DetectionMethod = "exact-word" | "exact-phrase" | "compact" | "regex" | "fuzzy";
@@ -26,6 +30,7 @@ export type ModerationDetectionResult = ModerationMatchResult | ModerationNoMatc
 
 export const severityDescending: readonly ProfanityLevel[] = ["critical", "high", "medium", "low"];
 
+// formatDurationLabel defines this module's public behavior or core flow.
 export function formatDurationLabel(durationMs: number): string {
   const totalSeconds = Math.round(durationMs / 1000);
 
@@ -52,6 +57,7 @@ export function formatDurationLabel(durationMs: number): string {
   return `${totalSeconds} second${totalSeconds === 1 ? "" : "s"}`;
 }
 
+// buildRulePreview defines this module's public behavior or core flow.
 export function buildRulePreview(rule: ProfanityRuleConfig): string {
   const actions: string[] = [];
 

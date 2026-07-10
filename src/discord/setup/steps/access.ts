@@ -1,3 +1,7 @@
+/**
+ * Module: access
+ * Purpose: Coordinates this part of the Legatus bot flow.
+ */
 import {ActionRowBuilder, ButtonBuilder, ButtonStyle, ContainerBuilder, MessageFlags, TextDisplayBuilder, TextInputStyle, type ButtonInteraction, type MessageActionRowComponentBuilder, type ModalSubmitInteraction} from "discord.js";
 import {LabelBuilder, ModalBuilder, TextDisplayBuilder as ModalTextDisplayBuilder, TextInputBuilder} from "@discordjs/builders";
 import type {BotConfig, GuildConfig} from "../../../config/schema.js";
@@ -18,6 +22,7 @@ import {buildSingleRoleSelect, buildTextChannelSelect, selectedChannelId, select
 import {updateWizardMessages} from "../session.js";
 import type {SetupSession} from "../types.js";
 
+// buildAccessContainer defines this module's public behavior or core flow.
 export function buildAccessContainer(phase: string): ContainerBuilder {
   const container = new ContainerBuilder()
     .addTextDisplayComponents(
@@ -43,6 +48,7 @@ export function buildAccessContainer(phase: string): ContainerBuilder {
   return container;
 }
 
+// buildAccessPasswordModal defines this module's public behavior or core flow.
 export function buildAccessPasswordModal(config: GuildConfig): ModalBuilder {
   return new ModalBuilder()
     .setTitle("Access Control - Password")
@@ -74,6 +80,7 @@ export function buildAccessPasswordModal(config: GuildConfig): ModalBuilder {
     );
 }
 
+// buildAccessEmojiModal defines this module's public behavior or core flow.
 export function buildAccessEmojiModal(config: GuildConfig): ModalBuilder {
   return new ModalBuilder()
     .setTitle("Access Control - Emoji")
@@ -117,6 +124,7 @@ export function buildAccessEmojiModal(config: GuildConfig): ModalBuilder {
     );
 }
 
+// handleAccessButton defines this module's public behavior or core flow.
 export async function handleAccessButton(interaction: ButtonInteraction, botConfig: BotConfig, guildId: string, phase: string): Promise<boolean> {
   if (interaction.customId === setupButtonIds.setAccessPassword) {
     if (phase !== "access") {
@@ -143,6 +151,7 @@ export async function handleAccessButton(interaction: ButtonInteraction, botConf
   return false;
 }
 
+// handleAccessModal defines this module's public behavior or core flow.
 export async function handleAccessModal(
   interaction: ModalSubmitInteraction,
   botConfig: BotConfig,

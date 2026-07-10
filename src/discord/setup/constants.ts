@@ -1,3 +1,7 @@
+/**
+ * Module: constants
+ * Purpose: Coordinates this part of the Legatus bot flow.
+ */
 export const setupButtonIds = {
   setRoles: "legatus-setup-set-roles",
   setAccessPassword: "ad874a1686544693d6a291966a2d02c8",

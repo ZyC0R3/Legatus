@@ -1,3 +1,7 @@
+/**
+ * Module: types
+ * Purpose: Coordinates this part of the Legatus bot flow.
+ */
 import type {GuildConfig} from "../../config/schema.js";
 
 export type SetupPhase = "roles" | "access" | "channels" | "moderation" | "triggers" | "done";

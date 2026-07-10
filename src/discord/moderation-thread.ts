@@ -1,3 +1,7 @@
+/**
+ * Module: moderation-thread
+ * Purpose: Coordinates this part of the Legatus bot flow.
+ */
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -28,11 +32,13 @@ export type ModerationTriggerSnapshot = {
   messageId: string;
 };
 
+// getModeratorRoleIds defines this module's public behavior or core flow.
 function getModeratorRoleIds(config: GuildConfig): string[] {
   const excludedRoleIds = new Set(config.moderationNoPingRoleIds);
   return [...new Set([...config.commandRoleIds, ...config.respondRoleIds])].filter((roleId) => !excludedRoleIds.has(roleId));
 }
 
+// buildModeratorPing defines this module's public behavior or core flow.
 export function buildModeratorPing(config: GuildConfig): string {
   const moderatorRoleIds = getModeratorRoleIds(config);
   return moderatorRoleIds.length > 0
@@ -40,6 +46,7 @@ export function buildModeratorPing(config: GuildConfig): string {
     : "";
 }
 
+// createModerationTriggerSnapshot defines this module's public behavior or core flow.
 export function createModerationTriggerSnapshot(message: Message): ModerationTriggerSnapshot | null {
   if (!message.guild) {
     return null;
@@ -59,6 +66,7 @@ export function createModerationTriggerSnapshot(message: Message): ModerationTri
   };
 }
 
+// formatTimestampLabel defines this module's public behavior or core flow.
 function formatTimestampLabel(date: Date | null | undefined): string {
   if (!date) {
     return "Not available";
@@ -68,6 +76,7 @@ function formatTimestampLabel(date: Date | null | undefined): string {
   return `<t:${seconds}:F> (<t:${seconds}:R>)`;
 }
 
+// formatUserFlags defines this module's public behavior or core flow.
 function formatUserFlags(flags: readonly string[] | null | undefined): string {
   if (!flags || flags.length === 0) {
     return "None";
@@ -76,6 +85,7 @@ function formatUserFlags(flags: readonly string[] | null | undefined): string {
   return flags.map((flag) => flag.replace(/([a-z])([A-Z])/g, "$1 $2")).join(", ");
 }
 
+// buildThreadActionEmbed defines this module's public behavior or core flow.
 function buildThreadActionEmbed(trigger: ModerationTriggerSnapshot, summaryTitle: string, summaryLines: string[], color: number): EmbedBuilder {
   return new EmbedBuilder()
     .setColor(color)
@@ -89,6 +99,7 @@ function buildThreadActionEmbed(trigger: ModerationTriggerSnapshot, summaryTitle
     .setTimestamp();
 }
 
+// buildUserDetailsEmbed defines this module's public behavior or core flow.
 function buildUserDetailsEmbed(trigger: ModerationTriggerSnapshot, member: GuildMember | null): EmbedBuilder {
   const memberJoinDate = formatTimestampLabel(member?.joinedAt ?? null);
   const createdDate = member ? formatTimestampLabel(member.user.createdAt) : "Not available";
@@ -124,6 +135,7 @@ function buildUserDetailsEmbed(trigger: ModerationTriggerSnapshot, member: Guild
     .setTimestamp();
 }
 
+// buildThreadEmbeds defines this module's public behavior or core flow.
 export async function buildThreadEmbeds(
   trigger: ModerationTriggerSnapshot,
   member: GuildMember | null,
@@ -137,6 +149,7 @@ export async function buildThreadEmbeds(
   ];
 }
 
+// buildCleanupEmbed defines this module's public behavior or core flow.
 export function buildCleanupEmbed(trigger: ModerationTriggerSnapshot, deletedCount: number): EmbedBuilder {
   return new EmbedBuilder()
     .setColor(0x6b7280)
@@ -149,6 +162,7 @@ export function buildCleanupEmbed(trigger: ModerationTriggerSnapshot, deletedCou
     .setTimestamp();
 }
 
+// buildModerationControls defines this module's public behavior or core flow.
 export function buildModerationControls(): ContainerBuilder[] {
   return [
     new ContainerBuilder()
@@ -162,6 +176,7 @@ export function buildModerationControls(): ContainerBuilder[] {
   ];
 }
 
+// canTargetViewChannel defines this module's public behavior or core flow.
 function canTargetViewChannel(channel: TextChannel | null, target: GuildMember | null): boolean {
   if (!channel || !target) {
     return false;
@@ -171,6 +186,7 @@ function canTargetViewChannel(channel: TextChannel | null, target: GuildMember |
   return Boolean(permissions?.has(PermissionFlagsBits.ViewChannel) && permissions?.has(PermissionFlagsBits.ReadMessageHistory));
 }
 
+// resolveModerationThreadParent defines this module's public behavior or core flow.
 async function resolveModerationThreadParent(
   trigger: ModerationTriggerSnapshot,
   config: GuildConfig,
@@ -211,6 +227,7 @@ async function resolveModerationThreadParent(
   return null;
 }
 
+// addModeratorsToThread defines this module's public behavior or core flow.
 async function addModeratorsToThread(thread: ThreadChannel, config: GuildConfig, guild: Message["guild"]): Promise<void> {
   if (!guild) {
     return;
@@ -235,6 +252,7 @@ async function addModeratorsToThread(thread: ThreadChannel, config: GuildConfig,
   }
 }
 
+// startModerationThread defines this module's public behavior or core flow.
 export async function startModerationThread(
   trigger: ModerationTriggerSnapshot,
   config: GuildConfig,
@@ -314,6 +332,7 @@ export async function startModerationThread(
   return thread;
 }
 
+// cleanupRecentMessages defines this module's public behavior or core flow.
 export async function cleanupRecentMessages(trigger: ModerationTriggerSnapshot, config: GuildConfig): Promise<number> {
   const guild = trigger.guild;
   const cutoff = trigger.createdTimestamp - config.messageDeletionWindowMs;
@@ -360,6 +379,7 @@ export async function cleanupRecentMessages(trigger: ModerationTriggerSnapshot, 
   return deletedCount;
 }
 
+// buildThreadActionPanel defines this module's public behavior or core flow.
 export function buildThreadActionPanel(targetUserId: string): ContainerBuilder[] {
   return [
     new ContainerBuilder()
@@ -376,6 +396,7 @@ export function buildThreadActionPanel(targetUserId: string): ContainerBuilder[]
   ];
 }
 
+// resolveTargetUserIdFromThreadName defines this module's public behavior or core flow.
 export function resolveTargetUserIdFromThreadName(threadName: string): string | null {
   const match = threadName.match(/([0-9]{17,20})$/);
   return match?.[1] ?? null;

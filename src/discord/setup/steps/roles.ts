@@ -1,3 +1,7 @@
+/**
+ * Module: roles
+ * Purpose: Coordinates this part of the Legatus bot flow.
+ */
 import {ActionRowBuilder, ButtonBuilder, ButtonStyle, ContainerBuilder, MessageFlags, TextDisplayBuilder, type ButtonInteraction, type MessageActionRowComponentBuilder, type ModalSubmitInteraction} from "discord.js";
 import {LabelBuilder, ModalBuilder, TextDisplayBuilder as ModalTextDisplayBuilder} from "@discordjs/builders";
 import type {BotConfig, GuildConfig} from "../../../config/schema.js";
@@ -7,6 +11,7 @@ import {buildRoleSelect, selectedRoleIds} from "../helpers.js";
 import type {SetupSession} from "../types.js";
 import {updateWizardMessages} from "../session.js";
 
+// buildRolesContainer defines this module's public behavior or core flow.
 export function buildRolesContainer(phase: string): ContainerBuilder {
   const container = new ContainerBuilder()
     .addTextDisplayComponents(
@@ -32,6 +37,7 @@ export function buildRolesContainer(phase: string): ContainerBuilder {
   return container;
 }
 
+// buildRoleModal defines this module's public behavior or core flow.
 export function buildRoleModal(config: GuildConfig): ModalBuilder {
   return new ModalBuilder()
     .setCustomId(setupModalId)
@@ -62,6 +68,7 @@ export function buildRoleModal(config: GuildConfig): ModalBuilder {
     );
 }
 
+// handleRolesButton defines this module's public behavior or core flow.
 export async function handleRolesButton(interaction: ButtonInteraction, botConfig: BotConfig, guildId: string, phase: string): Promise<boolean> {
   if (interaction.customId !== setupButtonIds.setRoles) {
     return false;
@@ -77,6 +84,7 @@ export async function handleRolesButton(interaction: ButtonInteraction, botConfi
   return true;
 }
 
+// handleRolesModal defines this module's public behavior or core flow.
 export async function handleRolesModal(
   interaction: ModalSubmitInteraction,
   botConfig: BotConfig,

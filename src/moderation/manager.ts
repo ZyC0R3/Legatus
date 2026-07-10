@@ -1,3 +1,7 @@
+/**
+ * Module: manager
+ * Purpose: Coordinates this part of the Legatus bot flow.
+ */
 import {type BotConfig, type GuildConfig} from "../config/schema.js";
 import {buildModerationEngine, type ModerationEngine} from "./engine.js";
 import {type ModerationDetectionResult, severityDescending} from "./types.js";
@@ -7,6 +11,7 @@ type CachedEngine = {
   engine: ModerationEngine;
 };
 
+// buildConfigFingerprint defines this module's public behavior or core flow.
 function buildConfigFingerprint(config: GuildConfig): string {
   const orderedLevels = severityDescending.filter((level) => config.profanityActiveLevels.includes(level));
   return [
@@ -18,6 +23,7 @@ function buildConfigFingerprint(config: GuildConfig): string {
   ].join("||");
 }
 
+// ModerationEngineManager defines this module's public behavior or core flow.
 export class ModerationEngineManager {
   private readonly cache = new Map<string, CachedEngine>();
 

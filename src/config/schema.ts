@@ -1,4 +1,8 @@
-﻿import {z} from "zod";
+/**
+ * Module: schema
+ * Purpose: Coordinates this part of the Legatus bot flow.
+ */
+import {z} from "zod";
 
 export type ProfanityLevel = "low" | "medium" | "high" | "critical";
 export type ProfanityLoggingLevel = "none" | "violations" | "violations-and-moderations" | "all";

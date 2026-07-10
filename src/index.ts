@@ -1,3 +1,7 @@
+/**
+ * Module: index
+ * Purpose: Coordinates this part of the Legatus bot flow.
+ */
 import {loadBotConfig} from "./config/store.js";
 import {env} from "./env.js";
 import {createDiscordClient} from "./discord/client.js";

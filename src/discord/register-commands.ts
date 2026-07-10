@@ -1,7 +1,12 @@
+/**
+ * Module: register-commands
+ * Purpose: Coordinates this part of the Legatus bot flow.
+ */
 import {REST, Routes} from "discord.js";
 import {env} from "../env.js";
 import {slashCommands} from "../commands/index.js";
 
+// registerApplicationCommands defines this module's public behavior or core flow.
 export async function registerApplicationCommands(): Promise<void> {
   const rest = new REST({version: "10"}).setToken(env.DISCORD_TOKEN);
   const payload = slashCommands.map((command) => command.data.toJSON());

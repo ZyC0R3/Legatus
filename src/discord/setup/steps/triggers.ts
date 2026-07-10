@@ -1,3 +1,7 @@
+/**
+ * Module: triggers
+ * Purpose: Coordinates this part of the Legatus bot flow.
+ */
 import {ActionRowBuilder, ButtonBuilder, ButtonStyle, ContainerBuilder, MessageFlags, TextDisplayBuilder, TextInputStyle, type ButtonInteraction, type MessageActionRowComponentBuilder, type ModalSubmitInteraction} from "discord.js";
 import {LabelBuilder, ModalBuilder, TextInputBuilder} from "@discordjs/builders";
 import type {BotConfig, GuildConfig} from "../../../config/schema.js";
@@ -7,6 +11,7 @@ import {updateWizardMessages} from "../session.js";
 import type {SetupSession} from "../types.js";
 import {buildSetupCompleteEmbed} from "../ui.js";
 
+// buildTriggersContainer defines this module's public behavior or core flow.
 export function buildTriggersContainer(phase: string): ContainerBuilder {
   const container = new ContainerBuilder()
     .addTextDisplayComponents(
@@ -31,6 +36,7 @@ export function buildTriggersContainer(phase: string): ContainerBuilder {
   return container;
 }
 
+// buildTriggerMessagesModal defines this module's public behavior or core flow.
 export function buildTriggerMessagesModal(config: GuildConfig): ModalBuilder {
   const modal = new ModalBuilder()
     .setCustomId(triggerMessagesModalId)
@@ -64,6 +70,7 @@ export function buildTriggerMessagesModal(config: GuildConfig): ModalBuilder {
   return modal;
 }
 
+// handleTriggersButton defines this module's public behavior or core flow.
 export async function handleTriggersButton(interaction: ButtonInteraction, botConfig: BotConfig, guildId: string, phase: string): Promise<boolean> {
   if (interaction.customId !== setupButtonIds.setTriggerMessages) {
     return false;
@@ -79,6 +86,7 @@ export async function handleTriggersButton(interaction: ButtonInteraction, botCo
   return true;
 }
 
+// handleTriggersModal defines this module's public behavior or core flow.
 export async function handleTriggersModal(
   interaction: ModalSubmitInteraction,
   botConfig: BotConfig,

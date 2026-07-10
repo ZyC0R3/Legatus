@@ -1,3 +1,7 @@
+/**
+ * Module: normalize
+ * Purpose: Coordinates this part of the Legatus bot flow.
+ */
 export interface NormalizedMessage {
   normalized: string;
   compact: string;
@@ -18,11 +22,13 @@ const charFoldMap: Record<string, string> = {
   "ѕ": "s"
 };
 
+// isAsciiAlphaNum defines this module's public behavior or core flow.
 function isAsciiAlphaNum(value: string): boolean {
   const code = value.charCodeAt(0);
   return (code >= 97 && code <= 122) || (code >= 48 && code <= 57);
 }
 
+// collapseRuns defines this module's public behavior or core flow.
 function collapseRuns(input: string): string {
   if (input.length < 3) {
     return input;
@@ -49,6 +55,7 @@ function collapseRuns(input: string): string {
   return output;
 }
 
+// squashRepeats defines this module's public behavior or core flow.
 export function squashRepeats(input: string): string {
   if (input.length < 3) {
     return input;
@@ -68,6 +75,7 @@ export function squashRepeats(input: string): string {
   return output;
 }
 
+// normalizeText defines this module's public behavior or core flow.
 export function normalizeText(input: string): NormalizedMessage {
   const source = input.toLowerCase().normalize("NFKD").replace(/\p{M}+/gu, "");
   let normalized = "";
@@ -112,6 +120,7 @@ export function normalizeText(input: string): NormalizedMessage {
   };
 }
 
+// normalizeTerm defines this module's public behavior or core flow.
 export function normalizeTerm(input: string): string {
   return normalizeText(input).normalized;
 }
@@ -133,6 +142,7 @@ const leetMap: Record<string, string> = {
   "|": "i"
 };
 
+// foldLeetToken defines this module's public behavior or core flow.
 export function foldLeetToken(input: string): string {
   if (input.length === 0) {
     return input;

@@ -1,3 +1,7 @@
+/**
+ * Module: session
+ * Purpose: Coordinates this part of the Legatus bot flow.
+ */
 import {type Client, MessageFlags, type ButtonInteraction, type ModalSubmitInteraction, ContainerBuilder, TextDisplayBuilder} from "discord.js";
 import type {BotConfig, GuildConfig} from "../../config/schema.js";
 import {saveBotConfig} from "../../config/store.js";
@@ -5,26 +9,32 @@ import type {SetupSession} from "./types.js";
 
 const setupSessions = new Map<string, SetupSession>();
 
+// setupSessionKey defines this module's public behavior or core flow.
 export function setupSessionKey(guildId: string, userId: string): string {
   return `${guildId}:${userId}`;
 }
 
+// cloneGuildConfig defines this module's public behavior or core flow.
 export function cloneGuildConfig(config: GuildConfig): GuildConfig {
   return structuredClone(config);
 }
 
+// getSetupSession defines this module's public behavior or core flow.
 export function getSetupSession(guildId: string, userId: string): SetupSession | null {
   return setupSessions.get(setupSessionKey(guildId, userId)) ?? null;
 }
 
+// setSetupSession defines this module's public behavior or core flow.
 export function setSetupSession(guildId: string, userId: string, session: SetupSession): void {
   setupSessions.set(setupSessionKey(guildId, userId), session);
 }
 
+// deleteSetupSession defines this module's public behavior or core flow.
 export function deleteSetupSession(guildId: string, userId: string): void {
   setupSessions.delete(setupSessionKey(guildId, userId));
 }
 
+// cleanupCreatedChannels defines this module's public behavior or core flow.
 async function cleanupCreatedChannels(client: Client, guildId: string, channelIds: string[]): Promise<void> {
   const guild = client.guilds.cache.get(guildId) ?? await client.guilds.fetch(guildId).catch(() => null);
   if (!guild) {
@@ -39,6 +49,7 @@ async function cleanupCreatedChannels(client: Client, guildId: string, channelId
   }));
 }
 
+// cancelSetupSession defines this module's public behavior or core flow.
 export async function cancelSetupSession(interaction: ButtonInteraction, botConfig: BotConfig, session: SetupSession): Promise<void> {
   const guildId = interaction.guildId!;
 
@@ -63,6 +74,7 @@ export async function cancelSetupSession(interaction: ButtonInteraction, botConf
   deleteSetupSession(guildId, interaction.user.id);
 }
 
+// updateWizardMessages defines this module's public behavior or core flow.
 export async function updateWizardMessages(
   interaction: ButtonInteraction | ModalSubmitInteraction,
   session: SetupSession,

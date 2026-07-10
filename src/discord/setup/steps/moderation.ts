@@ -1,3 +1,7 @@
+/**
+ * Module: moderation
+ * Purpose: Coordinates this part of the Legatus bot flow.
+ */
 import {ActionRowBuilder, ButtonBuilder, ButtonStyle, ContainerBuilder, MessageFlags, TextDisplayBuilder, type ButtonInteraction, type MessageActionRowComponentBuilder, type ModalSubmitInteraction} from "discord.js";
 import {LabelBuilder, ModalBuilder} from "@discordjs/builders";
 import type {BotConfig, GuildConfig} from "../../../config/schema.js";
@@ -7,6 +11,7 @@ import {buildDurationSelect, buildRoleSelect, selectedRoleIds} from "../helpers.
 import {updateWizardMessages} from "../session.js";
 import type {SetupSession} from "../types.js";
 
+// buildModerationContainer defines this module's public behavior or core flow.
 export function buildModerationContainer(phase: string): ContainerBuilder {
   const container = new ContainerBuilder()
     .addTextDisplayComponents(
@@ -31,6 +36,7 @@ export function buildModerationContainer(phase: string): ContainerBuilder {
   return container;
 }
 
+// buildModerationConfigModal defines this module's public behavior or core flow.
 export function buildModerationConfigModal(config: GuildConfig): ModalBuilder {
   const modal = new ModalBuilder()
     .setCustomId(moderationConfigModalId)
@@ -80,6 +86,7 @@ export function buildModerationConfigModal(config: GuildConfig): ModalBuilder {
   return modal;
 }
 
+// handleModerationButton defines this module's public behavior or core flow.
 export async function handleModerationButton(interaction: ButtonInteraction, botConfig: BotConfig, guildId: string, phase: string): Promise<boolean> {
   if (interaction.customId !== setupButtonIds.setModerationConfig) {
     return false;
@@ -95,6 +102,7 @@ export async function handleModerationButton(interaction: ButtonInteraction, bot
   return true;
 }
 
+// handleModerationModal defines this module's public behavior or core flow.
 export async function handleModerationModal(
   interaction: ModalSubmitInteraction,
   botConfig: BotConfig,

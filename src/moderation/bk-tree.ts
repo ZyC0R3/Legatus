@@ -1,3 +1,7 @@
+/**
+ * Module: bk-tree
+ * Purpose: Coordinates this part of the Legatus bot flow.
+ */
 export type DistanceFunction = (a: string, b: string, maxDistance: number) => number;
 
 type BKNode = {
@@ -5,6 +9,7 @@ type BKNode = {
   children: Map<number, BKNode>;
 };
 
+// BKTree defines this module's public behavior or core flow.
 export class BKTree {
   private readonly distance: DistanceFunction;
 
@@ -69,6 +74,7 @@ export class BKTree {
   }
 }
 
+// boundedLevenshtein defines this module's public behavior or core flow.
 export function boundedLevenshtein(a: string, b: string, maxDistance: number): number {
   const aLen = a.length;
   const bLen = b.length;

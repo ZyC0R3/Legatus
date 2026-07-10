@@ -1,3 +1,7 @@
+/**
+ * Module: setup
+ * Purpose: Coordinates this part of the Legatus bot flow.
+ */
 import {SlashCommandBuilder, type ChatInputCommandInteraction} from "discord.js";
 import type {BotConfig} from "../config/schema.js";
 import {startSetupWizard} from "../discord/setup.js";

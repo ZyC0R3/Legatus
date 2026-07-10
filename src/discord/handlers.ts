@@ -1,3 +1,7 @@
+/**
+ * Module: handlers
+ * Purpose: Coordinates this part of the Legatus bot flow.
+ */
 import {type Client, Events, type Interaction, type Message} from "discord.js";
 import {slashCommandMap} from "../commands/index.js";
 import {type BotConfig, type GuildConfig} from "../config/schema.js";
@@ -13,11 +17,22 @@ import {handleProfanityButton, handleProfanityModal} from "./profanity.js";
 import {registerApplicationCommands} from "./register-commands.js";
 import {handleSetupButton, handleSetupModal} from "./setup.js";
 
+// messageMatchesTrigger defines this module's public behavior or core flow.
 function messageMatchesTrigger(message: Message, config: GuildConfig): boolean {
   const content = message.content.toLowerCase();
   return config.messageTriggers.some((trigger) => content.includes(trigger.toLowerCase()));
 }
 
+// hasMassMention defines this module's public behavior or core flow.
+function hasMassMention(message: Message): boolean {
+  if (message.mentions.everyone) {
+    return true;
+  }
+
+  return /(^|\s)@(here|everyone)\b/i.test(message.content);
+}
+
+// shouldIgnoreMessageAuthor defines this module's public behavior or core flow.
 async function shouldIgnoreMessageAuthor(message: Message, config: GuildConfig): Promise<boolean> {
   if (!message.guild || !message.member) {
     return false;
@@ -35,6 +50,7 @@ async function shouldIgnoreMessageAuthor(message: Message, config: GuildConfig):
   return shouldIgnoreMember(freshMember, config);
 }
 
+// shouldSkipProfanityForAuthor defines this module's public behavior or core flow.
 async function shouldSkipProfanityForAuthor(message: Message, config: GuildConfig): Promise<boolean> {
   if (!message.guild || !message.member) {
     return false;
@@ -52,6 +68,7 @@ async function shouldSkipProfanityForAuthor(message: Message, config: GuildConfi
   return shouldBypassProfanityFilter(freshMember, config);
 }
 
+// handleSlashCommand defines this module's public behavior or core flow.
 async function handleSlashCommand(interaction: Interaction, config: GuildConfig, botConfig: BotConfig): Promise<void> {
   if (!interaction.isChatInputCommand()) {
     return;
@@ -94,6 +111,7 @@ async function handleSlashCommand(interaction: Interaction, config: GuildConfig,
   }
 }
 
+// handleMessage defines this module's public behavior or core flow.
 async function handleMessage(message: Message, client: Client, config: GuildConfig, moderationEngineManager: ModerationEngineManager): Promise<void> {
   if (!message.inGuild() || !message.member || message.author.bot) {
     return;
@@ -134,19 +152,22 @@ async function handleMessage(message: Message, client: Client, config: GuildConf
     }
   }
 
-  const wasMentioned = message.mentions.has(client.user?.id ?? "");
-  if (wasMentioned) {
-    const moderationHandled = await handleModerationMention(message, config, client.user?.id ?? null);
-    if (moderationHandled) {
-      return;
+  if (!hasMassMention(message)) {
+    const wasMentioned = message.mentions.has(client.user?.id ?? "");
+    if (wasMentioned) {
+      const moderationHandled = await handleModerationMention(message, config, client.user?.id ?? null);
+      if (moderationHandled) {
+        return;
+      }
     }
-  }
 
-  if (messageMatchesTrigger(message, config) && shouldRespondToMessages(message.member, config)) {
-    await message.reply("Legatus heard that trigger. The bot core is ready.");
+    if (messageMatchesTrigger(message, config) && shouldRespondToMessages(message.member, config)) {
+      await message.reply("Legatus heard that trigger. The bot core is ready.");
+    }
   }
 }
 
+// bindDiscordHandlers defines this module's public behavior or core flow.
 export function bindDiscordHandlers(client: Client, botConfig: BotConfig): void {
   const moderationEngineManager = new ModerationEngineManager();
   moderationEngineManager.warm(botConfig);

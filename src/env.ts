@@ -1,3 +1,7 @@
+/**
+ * Module: env
+ * Purpose: Coordinates this part of the Legatus bot flow.
+ */
 import {config as loadEnv} from "dotenv";
 import {z} from "zod";
 

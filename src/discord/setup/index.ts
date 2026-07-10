@@ -1,3 +1,7 @@
+/**
+ * Module: index
+ * Purpose: Coordinates this part of the Legatus bot flow.
+ */
 import {ContainerBuilder, MessageFlags, TextDisplayBuilder, type ButtonInteraction, type ChatInputCommandInteraction, type ModalSubmitInteraction} from "discord.js";
 import type {BotConfig} from "../../config/schema.js";
 import {getGuildSetupConfig} from "../../config/store.js";
@@ -11,6 +15,7 @@ import {handleChannelsButton, handleChannelsModal} from "./steps/channels.js";
 import {handleModerationButton, handleModerationModal} from "./steps/moderation.js";
 import {handleTriggersButton, handleTriggersModal} from "./steps/triggers.js";
 
+// startSetupWizard defines this module's public behavior or core flow.
 export async function startSetupWizard(interaction: ChatInputCommandInteraction, botConfig: BotConfig): Promise<void> {
   const guildId = interaction.guildId;
   if (!guildId) {
@@ -36,6 +41,7 @@ export async function startSetupWizard(interaction: ChatInputCommandInteraction,
   });
 }
 
+// handleSetupButton defines this module's public behavior or core flow.
 export async function handleSetupButton(interaction: ButtonInteraction, botConfig: BotConfig): Promise<boolean> {
   if (!interaction.inGuild()) {
     return false;
@@ -103,6 +109,7 @@ export async function handleSetupButton(interaction: ButtonInteraction, botConfi
   return false;
 }
 
+// handleSetupModal defines this module's public behavior or core flow.
 export async function handleSetupModal(interaction: ModalSubmitInteraction, botConfig: BotConfig): Promise<boolean> {
   if (!interaction.inGuild()) {
     return false;

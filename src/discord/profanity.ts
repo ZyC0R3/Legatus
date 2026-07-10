@@ -1,3 +1,7 @@
+/**
+ * Module: profanity
+ * Purpose: Coordinates this part of the Legatus bot flow.
+ */
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -91,14 +95,17 @@ type ProfanityLevel = "low" | "medium" | "high" | "critical";
 
 const profanitySessions = new Map<string, ProfanitySession>();
 
+// profanitySessionKey defines this module's public behavior or core flow.
 function profanitySessionKey(guildId: string, userId: string): string {
   return `${guildId}:${userId}`;
 }
 
+// capitalize defines this module's public behavior or core flow.
 function capitalize(value: string): string {
   return value.length > 0 ? value.charAt(0).toUpperCase() + value.slice(1) : value;
 }
 
+// parseTermsList defines this module's public behavior or core flow.
 function parseTermsList(value: string): string[] {
   const trimmed = value.trim();
   if (!trimmed) {
@@ -111,20 +118,24 @@ function parseTermsList(value: string): string[] {
     .filter((term) => term.length > 0);
 }
 
+// formatTermsForModal defines this module's public behavior or core flow.
 function formatTermsForModal(value: string): string {
   return parseTermsList(value).join(", ");
 }
 
+// formatTermsForSave defines this module's public behavior or core flow.
 function formatTermsForSave(value: string): string {
   return parseTermsList(value).join(" ,");
 }
 
+// parseActiveLevels defines this module's public behavior or core flow.
 function parseActiveLevels(values: readonly string[]): ProfanityLevel[] {
   return values.filter((value): value is ProfanityLevel =>
     value === "low" || value === "medium" || value === "high" || value === "critical"
   );
 }
 
+// hasConfiguredTerms defines this module's public behavior or core flow.
 function hasConfiguredTerms(config: GuildConfig): boolean {
   return config.profanityTermsConfigured
     || config.profanityActiveLevels.length > 0
@@ -134,6 +145,7 @@ function hasConfiguredTerms(config: GuildConfig): boolean {
     || config.profanityCriticalTerms !== defaultGuildConfig.profanityCriticalTerms;
 }
 
+// parseBooleanSelection defines this module's public behavior or core flow.
 function parseBooleanSelection(values: readonly string[]): boolean | null {
   const selected = values[0];
   if (selected === "yes") {
@@ -145,6 +157,7 @@ function parseBooleanSelection(values: readonly string[]): boolean | null {
   return null;
 }
 
+// parseDurationSelection defines this module's public behavior or core flow.
 function parseDurationSelection(values: readonly string[]): number | null {
   const selected = values[0];
   if (!selected) {
@@ -155,10 +168,12 @@ function parseDurationSelection(values: readonly string[]): number | null {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
 
+// hasConfiguredRule defines this module's public behavior or core flow.
 function hasConfiguredRule(config: GuildConfig["profanityRules"][ProfanityLevel]): boolean {
   return config.muteLengthMs !== null || config.kick !== null || config.ban !== null || config.openThread !== null;
 }
 
+// loggingValueForLevel defines this module's public behavior or core flow.
 function loggingValueForLevel(level: ProfanityLoggingLevel): string {
   if (level === "none") {
     return loggingValues.none;
@@ -172,6 +187,7 @@ function loggingValueForLevel(level: ProfanityLoggingLevel): string {
   return loggingValues.all;
 }
 
+// loggingLevelFromValue defines this module's public behavior or core flow.
 function loggingLevelFromValue(value: string | undefined): ProfanityLoggingLevel {
   if (value === loggingValues.violations) {
     return "violations";
@@ -185,6 +201,7 @@ function loggingLevelFromValue(value: string | undefined): ProfanityLoggingLevel
   return "none";
 }
 
+// selectedRoleId defines this module's public behavior or core flow.
 function selectedRoleId(values: {values(): Iterable<{id: string} | null>} | null): string | null {
   for (const value of values?.values() ?? []) {
     if (value?.id) {
@@ -194,6 +211,7 @@ function selectedRoleId(values: {values(): Iterable<{id: string} | null>} | null
   return null;
 }
 
+// selectedChannelId defines this module's public behavior or core flow.
 function selectedChannelId(values: {values(): Iterable<{id: string} | null>} | null): string | null {
   for (const value of values?.values() ?? []) {
     if (value?.id) {
@@ -203,6 +221,7 @@ function selectedChannelId(values: {values(): Iterable<{id: string} | null>} | n
   return null;
 }
 
+// buildProfanitySummaryEmbed defines this module's public behavior or core flow.
 function buildProfanitySummaryEmbed(config: GuildConfig): EmbedBuilder {
   const activeLevels = config.profanityActiveLevels.length > 0
     ? config.profanityActiveLevels.map((level) => capitalize(level)).join(", ")
@@ -260,6 +279,7 @@ function buildProfanitySummaryEmbed(config: GuildConfig): EmbedBuilder {
     );
 }
 
+// buildProfanityHeaderContainer defines this module's public behavior or core flow.
 function buildProfanityHeaderContainer(): ContainerBuilder {
   return new ContainerBuilder()
     .addTextDisplayComponents(
@@ -272,6 +292,7 @@ function buildProfanityHeaderContainer(): ContainerBuilder {
     );
 }
 
+// buildTermsOnlyComponents defines this module's public behavior or core flow.
 function buildTermsOnlyComponents(): ContainerBuilder[] {
   return [
     buildProfanityHeaderContainer()
@@ -300,6 +321,7 @@ function buildTermsOnlyComponents(): ContainerBuilder[] {
   ];
 }
 
+// buildRulesComponents defines this module's public behavior or core flow.
 function buildRulesComponents(): ContainerBuilder[] {
   return [
     buildProfanityHeaderContainer(),
@@ -336,6 +358,7 @@ function buildRulesComponents(): ContainerBuilder[] {
   ];
 }
 
+// buildCleanupLoggingContainer defines this module's public behavior or core flow.
 function buildCleanupLoggingContainer(enabled: boolean): ContainerBuilder {
   const container = new ContainerBuilder()
     .addTextDisplayComponents(
@@ -365,6 +388,7 @@ function buildCleanupLoggingContainer(enabled: boolean): ContainerBuilder {
   );
 }
 
+// buildCleanupLoggingComponents defines this module's public behavior or core flow.
 function buildCleanupLoggingComponents(): ContainerBuilder[] {
   return [
     buildProfanityHeaderContainer(),
@@ -376,6 +400,7 @@ function buildCleanupLoggingComponents(): ContainerBuilder[] {
   ];
 }
 
+// buildDefinedTermsModal defines this module's public behavior or core flow.
 function buildDefinedTermsModal(config: GuildConfig): ModalBuilder {
   return new ModalBuilder()
     .setTitle("Profanity, Banned words")
@@ -441,6 +466,7 @@ function buildDefinedTermsModal(config: GuildConfig): ModalBuilder {
     );
 }
 
+// buildRulesModal defines this module's public behavior or core flow.
 function buildRulesModal(level: ProfanityLevel, modalId: string, ruleConfig: GuildConfig["profanityRules"][ProfanityLevel]): ModalBuilder {
   const levelLabel = capitalize(level);
 
@@ -506,6 +532,7 @@ function buildRulesModal(level: ProfanityLevel, modalId: string, ruleConfig: Gui
     );
 }
 
+// buildCleanupModal defines this module's public behavior or core flow.
 function buildCleanupModal(config: GuildConfig): ModalBuilder {
   return new ModalBuilder()
     .setTitle("Clean up Conditions")
@@ -578,6 +605,7 @@ function buildCleanupModal(config: GuildConfig): ModalBuilder {
     );
 }
 
+// buildLoggingModal defines this module's public behavior or core flow.
 function buildLoggingModal(config: GuildConfig): ModalBuilder {
   return new ModalBuilder()
     .setTitle("Logging")
@@ -629,14 +657,17 @@ function buildLoggingModal(config: GuildConfig): ModalBuilder {
     );
 }
 
+// isProfanityButton defines this module's public behavior or core flow.
 function isProfanityButton(customId: string): boolean {
   return Object.values(profanityButtonIds).includes(customId as (typeof profanityButtonIds)[keyof typeof profanityButtonIds]);
 }
 
+// isProfanityModal defines this module's public behavior or core flow.
 function isProfanityModal(customId: string): boolean {
   return Object.values(profanityModalIds).includes(customId as (typeof profanityModalIds)[keyof typeof profanityModalIds]);
 }
 
+// postProfanityPanel defines this module's public behavior or core flow.
 export async function postProfanityPanel(interaction: ChatInputCommandInteraction, botConfig?: BotConfig): Promise<void> {
   await interaction.reply({
     components: buildTermsOnlyComponents(),
@@ -653,6 +684,7 @@ export async function postProfanityPanel(interaction: ChatInputCommandInteractio
   }
 }
 
+// handleProfanityButton defines this module's public behavior or core flow.
 export async function handleProfanityButton(interaction: ButtonInteraction, botConfig: BotConfig): Promise<boolean> {
   if (!isProfanityButton(interaction.customId)) {
     return false;
@@ -770,6 +802,7 @@ export async function handleProfanityButton(interaction: ButtonInteraction, botC
   return true;
 }
 
+// handleProfanityModal defines this module's public behavior or core flow.
 export async function handleProfanityModal(interaction: ModalSubmitInteraction, botConfig: BotConfig): Promise<boolean> {
   if (!isProfanityModal(interaction.customId)) {
     return false;
