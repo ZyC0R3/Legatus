@@ -20,9 +20,34 @@ const mergedListKeys = [
   "messageTriggers"
 ] as const satisfies ReadonlyArray<keyof GuildConfig>;
 
+type JsonObject = Record<string, unknown>;
+
 // mergeLists defines this module's public behavior or core flow.
 function mergeLists(...lists: Array<readonly string[]>): string[] {
   return [...new Set(lists.flat().filter(Boolean))];
+}
+
+// fillMissingValues preserves existing config values while backfilling any keys added by schema defaults.
+function fillMissingValues(rawValue: unknown, normalizedValue: unknown): unknown {
+  if (Array.isArray(normalizedValue)) {
+    return rawValue === undefined ? structuredClone(normalizedValue) : rawValue;
+  }
+
+  if (normalizedValue === null || typeof normalizedValue !== "object") {
+    return rawValue === undefined ? normalizedValue : rawValue;
+  }
+
+  const rawObject = rawValue !== null && typeof rawValue === "object" && !Array.isArray(rawValue)
+    ? rawValue as JsonObject
+    : {};
+  const normalizedObject = normalizedValue as JsonObject;
+  const mergedObject: JsonObject = {...rawObject};
+
+  for (const [key, value] of Object.entries(normalizedObject)) {
+    mergedObject[key] = fillMissingValues(rawObject[key], value);
+  }
+
+  return mergedObject;
 }
 
 // resolveGuildConfig defines this module's public behavior or core flow.
@@ -156,7 +181,14 @@ export async function loadBotConfig(): Promise<BotConfig> {
   try {
     const rawConfig = await readFile(configFilePath, "utf8");
     const parsedConfig = JSON.parse(rawConfig) as unknown;
-    return botConfigSchema.parse(parsedConfig);
+    const normalizedConfig = botConfigSchema.parse(parsedConfig);
+    const persistedConfig = fillMissingValues(parsedConfig, normalizedConfig) as BotConfig;
+
+    if (!isDeepStrictEqual(persistedConfig, parsedConfig)) {
+      await writeConfigFile(persistedConfig);
+    }
+
+    return normalizedConfig;
   } catch (error: unknown) {
     if (typeof error === "object" && error !== null && "code" in error && (error as {code?: string}).code === "ENOENT") {
       await writeConfigFile(defaultBotConfig);
