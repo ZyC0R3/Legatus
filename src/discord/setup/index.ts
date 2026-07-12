@@ -19,17 +19,28 @@ import {handleTriggersButton, handleTriggersModal} from "./steps/triggers.js";
 export async function startSetupWizard(interaction: ChatInputCommandInteraction, botConfig: BotConfig): Promise<void> {
   const guildId = interaction.guildId;
   if (!guildId) {
-    await interaction.reply({content: "Legatus setup can only be run inside a server.", flags: MessageFlags.Ephemeral});
+    if (interaction.deferred || interaction.replied) {
+      await interaction.editReply({content: "Legatus setup can only be run inside a server."});
+    } else {
+      await interaction.reply({content: "Legatus setup can only be run inside a server.", flags: MessageFlags.Ephemeral});
+    }
     return;
   }
 
   const userId = interaction.user.id;
   const originalGuildConfig = botConfig.guilds[guildId] ? cloneGuildConfig(botConfig.guilds[guildId]) : null;
 
-  await interaction.reply({
-    components: buildWizardComponents("roles"),
-    flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2
-  });
+  if (interaction.deferred || interaction.replied) {
+    await interaction.editReply({
+      components: buildWizardComponents("roles"),
+      flags: MessageFlags.IsComponentsV2
+    });
+  } else {
+    await interaction.reply({
+      components: buildWizardComponents("roles"),
+      flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2
+    });
+  }
   const setupMessage = await interaction.fetchReply();
 
   setSetupSession(guildId, userId, {

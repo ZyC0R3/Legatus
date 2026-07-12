@@ -18,7 +18,7 @@ export function buildChannelsContainer(phase: string): ContainerBuilder {
     .addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
         [
-          "Channel Set-up",
+          "Channel Setup",
           "Choose whether to use an existing moderation channel or create a new one."
         ].join("\n")
       )
@@ -42,14 +42,14 @@ export function buildChannelsContainer(phase: string): ContainerBuilder {
 export function buildExistingChannelModal(): ModalBuilder {
   return new ModalBuilder()
     .setCustomId(existingChannelModalId)
-    .setTitle("Channel Set-up")
+    .setTitle("Channel Setup")
     .addTextDisplayComponents(
-      new ModalTextDisplayBuilder().setContent("All moderation actions will follow this same logic. \n\n1:Once a moderation action is triggered, the targeted user will be timed-out for 1 hour.\n\n2:A thread will be opened in the moderation channel with the target user added, along with moderators.\n\n3: A copy of the targeted or triggering message will be shown, with a number of buttons for quick moderation actions.")
+      new ModalTextDisplayBuilder().setContent("All moderation actions will follow this same logic.\n\n1. Once a moderation action is triggered, the targeted user will be timed out for 1 hour.\n\n2. A thread will be opened in the moderation channel with the target user added, along with moderators.\n\n3. A copy of the targeted or triggering message will be shown, with a number of buttons for quick moderation actions.")
     )
     .addLabelComponents(
       new LabelBuilder()
         .setLabel("Channel Selection")
-        .setDescription("Pick a channel to act as the moderation channel")
+        .setDescription("Pick a channel to use as the moderation channel.")
         .setChannelSelectMenuComponent(
           new ChannelSelectMenuBuilder()
             .setCustomId(channelSelectId)
@@ -58,8 +58,8 @@ export function buildExistingChannelModal(): ModalBuilder {
             .setChannelTypes([ChannelType.GuildText])
         ),
       new LabelBuilder()
-        .setLabel("Do you want this to act as a honey pot?")
-        .setDescription("A honey pot channel will automatically time out any user who posts in the channel.")
+        .setLabel("Use as a honey pot?")
+        .setDescription("A honey pot channel will automatically time out any user who posts in it.")
         .setStringSelectMenuComponent(buildHoneyPotSelect())
     );
 }
@@ -68,9 +68,9 @@ export function buildExistingChannelModal(): ModalBuilder {
 export function buildCreateChannelModal(): ModalBuilder {
   return new ModalBuilder()
     .setCustomId(createChannelModalId)
-    .setTitle("Channel Set-up")
+    .setTitle("Channel Setup")
     .addTextDisplayComponents(
-      new ModalTextDisplayBuilder().setContent("All moderation actions will follow this same logic. \n\n1:Once a moderation action is triggered, the targeted user will be timed-out for 1 hour.\n\n2:A thread will be opened in the moderation channel with the target user added, along with moderators.\n\n3: A copy of the targeted or triggering message will be shown, with a number of buttons for quick moderation actions.\n\nIf no channel is selected, the channel will be made at the top of the server.")
+      new ModalTextDisplayBuilder().setContent("All moderation actions will follow this same logic.\n\n1. Once a moderation action is triggered, the targeted user will be timed out for 1 hour.\n\n2. A thread will be opened in the moderation channel with the target user added, along with moderators.\n\n3. A copy of the targeted or triggering message will be shown, with a number of buttons for quick moderation actions.\n\nIf no channel is selected, the channel will be created at the top of the server.")
     )
     .addLabelComponents(
       new LabelBuilder()
@@ -84,8 +84,8 @@ export function buildCreateChannelModal(): ModalBuilder {
             .setChannelTypes([ChannelType.GuildCategory])
         ),
       new LabelBuilder()
-        .setLabel("Do you want this to act as a honey pot?")
-        .setDescription("A honey pot channel will automatically time out any user who posts in the channel.")
+        .setLabel("Use as a honey pot?")
+        .setDescription("A honey pot channel will automatically time out any user who posts in it.")
         .setStringSelectMenuComponent(buildHoneyPotSelect()),
       new LabelBuilder()
         .setLabel("Channel Name")

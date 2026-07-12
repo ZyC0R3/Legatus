@@ -424,7 +424,8 @@ export function isBotOwnedModerationThreadMessage(message: Message, config: Guil
   const knownBotModerationPrefixes = [
     "Moderation Action - ",
     "Profanity Action - ",
-    "Honey Pot - "
+    "Honey Pot - ",
+    "Anti Spam - "
   ];
 
   return knownBotModerationPrefixes.some((prefix) => thread.name.startsWith(prefix));

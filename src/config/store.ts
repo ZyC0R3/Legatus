@@ -62,6 +62,15 @@ export function resolveGuildConfig(config: BotConfig, guildId: string): GuildCon
     isHoneyPotChannel: guildConfig.isHoneyPotChannel ?? config.global.isHoneyPotChannel,
     moderationTimeoutMs: guildConfig.moderationTimeoutMs ?? config.global.moderationTimeoutMs,
     messageDeletionWindowMs: guildConfig.messageDeletionWindowMs ?? config.global.messageDeletionWindowMs,
+    antiSpamEnabled: guildConfig.antiSpamEnabled ?? config.global.antiSpamEnabled,
+    antiSpamBufferSeconds: guildConfig.antiSpamBufferSeconds ?? config.global.antiSpamBufferSeconds,
+    antiSpamSameChannelRepeatThreshold: guildConfig.antiSpamSameChannelRepeatThreshold ?? config.global.antiSpamSameChannelRepeatThreshold,
+    antiSpamUniqueChannelsThreshold: guildConfig.antiSpamUniqueChannelsThreshold ?? config.global.antiSpamUniqueChannelsThreshold,
+    antiSpamSimilarityPercent: guildConfig.antiSpamSimilarityPercent ?? config.global.antiSpamSimilarityPercent,
+    antiSpamMuteLengthMs: guildConfig.antiSpamMuteLengthMs ?? config.global.antiSpamMuteLengthMs,
+    antiSpamOpenModerationThread: guildConfig.antiSpamOpenModerationThread ?? config.global.antiSpamOpenModerationThread,
+    antiSpamLogDeletedMessages: guildConfig.antiSpamLogDeletedMessages ?? config.global.antiSpamLogDeletedMessages,
+    antiSpamLoggingChannelId: guildConfig.antiSpamLoggingChannelId ?? config.global.antiSpamLoggingChannelId,
     moderationThreadMessage: guildConfig.moderationThreadMessage ?? config.global.moderationThreadMessage,
     honeyPotChannelMessage: guildConfig.honeyPotChannelMessage ?? config.global.honeyPotChannelMessage
   };

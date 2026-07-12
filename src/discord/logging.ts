@@ -18,8 +18,7 @@ function shouldLogModeration(level: GuildConfig["profanityLogging"]["level"]): b
 }
 
 // resolveLogChannel defines this module's public behavior or core flow.
-async function resolveLogChannel(guild: Guild, config: GuildConfig): Promise<GuildTextBasedChannel | null> {
-  const channelId = config.profanityLogging.channelId;
+async function resolveLogChannel(guild: Guild, channelId: string | null): Promise<GuildTextBasedChannel | null> {
   if (!channelId) {
     return null;
   }
@@ -40,7 +39,7 @@ type LogPayload = {
 
 // sendLog defines this module's public behavior or core flow.
 async function sendLog(guild: Guild, config: GuildConfig, payload: LogPayload): Promise<void> {
-  const channel = await resolveLogChannel(guild, config);
+  const channel = await resolveLogChannel(guild, config.profanityLogging.channelId);
   if (!channel) {
     return;
   }
@@ -116,6 +115,15 @@ function buildModerationActionEmbed(description: string): EmbedBuilder {
     .setTimestamp();
 }
 
+// buildAntiSpamActionEmbed defines this module's public behavior or core flow.
+function buildAntiSpamActionEmbed(description: string): EmbedBuilder {
+  return new EmbedBuilder()
+    .setColor(Colors.Fuchsia)
+    .setTitle("Anti-Spam Action")
+    .setDescription(description)
+    .setTimestamp();
+}
+
 // logViolationMessage defines this module's public behavior or core flow.
 export async function logViolationMessage(
   message: Message,
@@ -146,4 +154,22 @@ export async function logModerationAction(
   await sendLog(guild, config, {
     embeds: [buildModerationActionEmbed(description)]
   });
+}
+
+// logAntiSpamAction defines this module's public behavior or core flow.
+export async function logAntiSpamAction(
+  guild: Guild,
+  config: GuildConfig,
+  description: string
+): Promise<void> {
+  if (!config.antiSpamLogDeletedMessages) {
+    return;
+  }
+
+  const channel = await resolveLogChannel(guild, config.antiSpamLoggingChannelId);
+  if (!channel) {
+    return;
+  }
+
+  await channel.send({embeds: [buildAntiSpamActionEmbed(description)]}).catch(() => undefined);
 }

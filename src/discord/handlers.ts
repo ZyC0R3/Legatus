@@ -2,7 +2,7 @@
  * Module: handlers
  * Purpose: Coordinates this part of the Legatus bot flow.
  */
-import {type Client, Events, type Interaction, type Message} from "discord.js";
+import {type Client, Events, type Interaction, MessageFlags, type Message} from "discord.js";
 import {slashCommandMap} from "../commands/index.js";
 import {type BotConfig, type GuildConfig} from "../config/schema.js";
 import {resolveGuildConfig} from "../config/store.js";
@@ -17,6 +17,7 @@ import {buildRulePreview} from "../moderation/types.js";
 import {handleProfanityButton, handleProfanityModal} from "./profanity.js";
 import {registerApplicationCommands} from "./register-commands.js";
 import {handleSetupButton, handleSetupModal} from "./setup.js";
+import {handleAntiSpamButton, handleAntiSpamMessage, handleAntiSpamModal} from "./antispam.js";
 
 // messageMatchesTrigger defines this module's public behavior or core flow.
 function messageMatchesTrigger(message: Message, config: GuildConfig): boolean {
@@ -78,7 +79,7 @@ async function handleSlashCommand(interaction: Interaction, config: GuildConfig,
   const command = slashCommandMap.get(interaction.commandName);
 
   if (!command) {
-    await interaction.reply({content: "This command is not registered yet.", ephemeral: true});
+    await interaction.reply({content: "This command is not registered yet.", flags: MessageFlags.Ephemeral});
     return;
   }
 
@@ -88,12 +89,14 @@ async function handleSlashCommand(interaction: Interaction, config: GuildConfig,
 
   const member = await interaction.guild.members.fetch(interaction.user.id);
   if (!member || shouldIgnoreMember(member, config)) {
-    await interaction.reply({content: "You are not allowed to use Legatus here.", ephemeral: true});
+    await interaction.reply({content: "You are not allowed to use Legatus here.", flags: MessageFlags.Ephemeral});
     return;
   }
 
-  if (!canUseCommands(member, config)) {
-    await interaction.reply({content: "You do not have permission to use this command.", ephemeral: true});
+  const bypassCommandPermission = interaction.commandName === "scanmembers";
+
+  if (!bypassCommandPermission && !canUseCommands(member, config)) {
+    await interaction.reply({content: "You do not have permission to use this command.", flags: MessageFlags.Ephemeral});
     return;
   }
 
@@ -104,11 +107,11 @@ async function handleSlashCommand(interaction: Interaction, config: GuildConfig,
 
     const failureMessage = "An unexpected error occurred while running that command.";
     if (interaction.deferred || interaction.replied) {
-      await interaction.followUp({content: failureMessage, ephemeral: true}).catch(() => undefined);
+      await interaction.followUp({content: failureMessage, flags: MessageFlags.Ephemeral}).catch(() => undefined);
       return;
     }
 
-    await interaction.reply({content: failureMessage, ephemeral: true}).catch(() => undefined);
+    await interaction.reply({content: failureMessage, flags: MessageFlags.Ephemeral}).catch(() => undefined);
   }
 }
 
@@ -138,6 +141,11 @@ async function handleMessage(message: Message, client: Client, config: GuildConf
 
   const honeyPotHandled = await handleHoneyPotMessage(message, config);
   if (honeyPotHandled) {
+    return;
+  }
+
+  const antiSpamHandled = await handleAntiSpamMessage(message, config);
+  if (antiSpamHandled) {
     return;
   }
 
@@ -188,6 +196,11 @@ export function bindDiscordHandlers(client: Client, botConfig: BotConfig): void 
     try {
       if (interaction.isButton()) {
         const guildConfig = interaction.inGuild() ? resolveGuildConfig(botConfig, interaction.guildId) : botConfig.global;
+        const antiSpamHandled = await handleAntiSpamButton(interaction, botConfig);
+        if (antiSpamHandled) {
+          return;
+        }
+
         const honeyPotHandled = await handleHoneyPotAction(interaction, guildConfig);
         if (honeyPotHandled) {
           return;
@@ -205,6 +218,11 @@ export function bindDiscordHandlers(client: Client, botConfig: BotConfig): void 
       }
 
       if (interaction.isModalSubmit()) {
+        const antiSpamHandled = await handleAntiSpamModal(interaction, botConfig);
+        if (antiSpamHandled) {
+          return;
+        }
+
         const profanityHandled = await handleProfanityModal(interaction, botConfig);
         if (profanityHandled) {
           return;
@@ -228,9 +246,9 @@ export function bindDiscordHandlers(client: Client, botConfig: BotConfig): void 
       if (interaction.isRepliable()) {
         const failureMessage = "An unexpected error occurred while processing that interaction.";
         if (interaction.deferred || interaction.replied) {
-          await interaction.followUp({content: failureMessage, ephemeral: true}).catch(() => undefined);
+          await interaction.followUp({content: failureMessage, flags: MessageFlags.Ephemeral}).catch(() => undefined);
         } else {
-          await interaction.reply({content: failureMessage, ephemeral: true}).catch(() => undefined);
+          await interaction.reply({content: failureMessage, flags: MessageFlags.Ephemeral}).catch(() => undefined);
         }
       }
     }

@@ -73,7 +73,7 @@ export function buildAccessContainer(phase: string): ContainerBuilder {
       new TextDisplayBuilder().setContent(
         [
           "Access control",
-          "Here you can define a Password or emoji reaction to trigger a users access."
+          "Here you can define a password or emoji reaction to trigger a user's access."
         ].join("\n")
       )
     );
@@ -83,7 +83,7 @@ export function buildAccessContainer(phase: string): ContainerBuilder {
       new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
         new ButtonBuilder().setStyle(ButtonStyle.Success).setLabel("Password / Phrase").setCustomId(setupButtonIds.setAccessPassword),
         new ButtonBuilder().setStyle(ButtonStyle.Success).setLabel("Emoji").setCustomId(setupButtonIds.setAccessEmoji),
-        new ButtonBuilder().setStyle(ButtonStyle.Success).setLabel("Extra's").setCustomId(setupButtonIds.setAccessExtras),
+        new ButtonBuilder().setStyle(ButtonStyle.Success).setLabel("Extras").setCustomId(setupButtonIds.setAccessExtras),
         new ButtonBuilder().setStyle(ButtonStyle.Primary).setLabel("Next").setCustomId(setupButtonIds.accessNext),
         new ButtonBuilder().setStyle(ButtonStyle.Danger).setLabel("Cancel").setCustomId(setupButtonIds.cancelAccess)
       )
@@ -101,7 +101,7 @@ export function buildAccessPasswordModal(config: GuildConfig): ModalBuilder {
     .addLabelComponents(
       new LabelBuilder()
         .setLabel("Password or Phrase")
-        .setDescription("Define a Password or Phrase to trigger a role to be added to users to allow access to the server.")
+        .setDescription("Define a password or phrase that adds a role and grants server access.")
         .setTextInputComponent(
           new TextInputBuilder()
             .setCustomId(accessPasswordPhraseId)
@@ -134,8 +134,8 @@ export function buildAccessEmojiModal(config: GuildConfig): ModalBuilder {
     .setCustomId(accessEmojiModalId)
     .addLabelComponents(
       new LabelBuilder()
-        .setLabel("Message or Message ID - This field is required.")
-        .setDescription("Use an 18 or 19 digit message ID, or type a message to post for reactions.")
+        .setLabel("Message or Message ID")
+        .setDescription("Use an 18- or 19-digit message ID, or type a message to post for reactions.")
         .setTextInputComponent(
           new TextInputBuilder()
             .setCustomId(accessEmojiMessageOrIdId)
@@ -146,7 +146,7 @@ export function buildAccessEmojiModal(config: GuildConfig): ModalBuilder {
     )
     .addLabelComponents(
       new LabelBuilder()
-        .setLabel("Enter the Emoji - This field is required.")
+        .setLabel("Enter the emoji")
         .setTextInputComponent(
           new TextInputBuilder()
             .setCustomId(accessEmojiValueId)
@@ -185,17 +185,17 @@ export function buildAccessExtrasModal(config: GuildConfig): ModalBuilder {
       new StringSelectMenuOptionBuilder()
         .setLabel("Join Only")
         .setValue(accessJoinOnlyValue)
-        .setDescription("Log all User join actions")
+        .setDescription("Log all user join actions")
         .setDefault(defaultLogging === accessJoinOnlyValue),
       new StringSelectMenuOptionBuilder()
         .setLabel("Leave Only")
         .setValue(accessLeaveOnlyValue)
-        .setDescription("Log all User leave actions")
+        .setDescription("Log all user leave actions")
         .setDefault(defaultLogging === accessLeaveOnlyValue),
       new StringSelectMenuOptionBuilder()
         .setLabel("Join and Leave")
         .setValue(accessJoinAndLeaveValue)
-        .setDescription("Log all User join and leave actions")
+        .setDescription("Log all user join and leave actions")
         .setDefault(defaultLogging === accessJoinAndLeaveValue)
     );
 
@@ -211,11 +211,11 @@ export function buildAccessExtrasModal(config: GuildConfig): ModalBuilder {
   }
 
   return new ModalBuilder()
-    .setTitle("Access Control - Extra's")
+    .setTitle("Access Control - Extras")
     .setCustomId(accessExtrasModalId)
     .addTextDisplayComponents(
       new ModalTextDisplayBuilder()
-        .setContent("These extra setting will apply to any or all access control types.")
+        .setContent("These extra settings apply to one or more access control types.")
     )
     .addLabelComponents(
       new LabelBuilder()
@@ -231,7 +231,7 @@ export function buildAccessExtrasModal(config: GuildConfig): ModalBuilder {
     .addLabelComponents(
       new LabelBuilder()
         .setLabel("Welcome Message Channel")
-        .setDescription("if none provided, the welcome message will be posted in the channel where the action was completed. ")
+        .setDescription("If none is provided, the welcome message will be posted in the channel where the action was completed.")
         .setChannelSelectMenuComponent(buildTextChannelSelect(accessWelcomeMessageChannelId, config.accessWelcomeMessageChannelId, false))
     )
     .addLabelComponents(

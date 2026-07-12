@@ -485,9 +485,9 @@ function buildRulesModal(level: ProfanityLevel, modalId: string, ruleConfig: Gui
             .setCustomId(profanityFieldIds.muteLength)
             .setRequired(false)
             .addOptions(
-              new StringSelectMenuOptionBuilder().setLabel("60 Secs").setValue(String(60 * 1000)).setDefault(ruleConfig.muteLengthMs === 60 * 1000),
-              new StringSelectMenuOptionBuilder().setLabel("5 Mins").setValue(String(5 * 60 * 1000)).setDefault(ruleConfig.muteLengthMs === 5 * 60 * 1000),
-              new StringSelectMenuOptionBuilder().setLabel("10 Mins").setValue(String(10 * 60 * 1000)).setDefault(ruleConfig.muteLengthMs === 10 * 60 * 1000),
+              new StringSelectMenuOptionBuilder().setLabel("60 Seconds").setValue(String(60 * 1000)).setDefault(ruleConfig.muteLengthMs === 60 * 1000),
+              new StringSelectMenuOptionBuilder().setLabel("5 Minutes").setValue(String(5 * 60 * 1000)).setDefault(ruleConfig.muteLengthMs === 5 * 60 * 1000),
+              new StringSelectMenuOptionBuilder().setLabel("10 Minutes").setValue(String(10 * 60 * 1000)).setDefault(ruleConfig.muteLengthMs === 10 * 60 * 1000),
               new StringSelectMenuOptionBuilder().setLabel("1 Hour").setValue(String(60 * 60 * 1000)).setDefault(ruleConfig.muteLengthMs === 60 * 60 * 1000),
               new StringSelectMenuOptionBuilder().setLabel("1 Day").setValue(String(24 * 60 * 60 * 1000)).setDefault(ruleConfig.muteLengthMs === 24 * 60 * 60 * 1000),
               new StringSelectMenuOptionBuilder().setLabel("1 Week").setValue(String(7 * 24 * 60 * 60 * 1000)).setDefault(ruleConfig.muteLengthMs === 7 * 24 * 60 * 60 * 1000)
@@ -520,7 +520,7 @@ function buildRulesModal(level: ProfanityLevel, modalId: string, ruleConfig: Gui
     )
     .addLabelComponents(
       new LabelBuilder()
-        .setLabel("Open Moderation Thread")
+        .setLabel("Open moderation thread")
         .setStringSelectMenuComponent(
           new StringSelectMenuBuilder()
             .setCustomId(profanityFieldIds.openThread)
@@ -535,7 +535,7 @@ function buildRulesModal(level: ProfanityLevel, modalId: string, ruleConfig: Gui
 // buildCleanupModal defines this module's public behavior or core flow.
 function buildCleanupModal(config: GuildConfig): ModalBuilder {
   return new ModalBuilder()
-    .setTitle("Clean up Conditions")
+    .setTitle("Cleanup Conditions")
     .setCustomId(profanityModalIds.cleanup)
     .addTextDisplayComponents(
       new ModalTextDisplayBuilder()

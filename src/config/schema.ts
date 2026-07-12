@@ -74,6 +74,15 @@ export interface GuildConfig {
   isHoneyPotChannel: boolean;
   moderationTimeoutMs: number;
   messageDeletionWindowMs: number;
+  antiSpamEnabled: boolean;
+  antiSpamBufferSeconds: number;
+  antiSpamSameChannelRepeatThreshold: number;
+  antiSpamUniqueChannelsThreshold: number;
+  antiSpamSimilarityPercent: number;
+  antiSpamMuteLengthMs: number;
+  antiSpamOpenModerationThread: boolean;
+  antiSpamLogDeletedMessages: boolean;
+  antiSpamLoggingChannelId: string | null;
   moderationThreadMessage: string;
   honeyPotChannelMessage: string;
 }
@@ -137,6 +146,15 @@ export const defaultGuildConfig: GuildConfig = {
   isHoneyPotChannel: false,
   moderationTimeoutMs: 60 * 60 * 1000,
   messageDeletionWindowMs: 60 * 1000,
+  antiSpamEnabled: true,
+  antiSpamBufferSeconds: 3,
+  antiSpamSameChannelRepeatThreshold: 3,
+  antiSpamUniqueChannelsThreshold: 4,
+  antiSpamSimilarityPercent: 95,
+  antiSpamMuteLengthMs: 60 * 60 * 1000,
+  antiSpamOpenModerationThread: true,
+  antiSpamLogDeletedMessages: true,
+  antiSpamLoggingChannelId: null,
   moderationThreadMessage: "This is the message automatically posted for the user to see when the moderation thread is opened.",
   honeyPotChannelMessage: "This channel is reserved for automated server functions. Any message sent here will automatically trigger a 1-hour timeout.\nIf you're looking for help or wish to chat, please use the appropriate channels."
 };
@@ -228,6 +246,15 @@ export const guildConfigSchema = z.object({
   isHoneyPotChannel: z.boolean().default(false),
   moderationTimeoutMs: z.number().int().positive().default(60 * 60 * 1000),
   messageDeletionWindowMs: z.number().int().positive().default(60 * 1000),
+  antiSpamEnabled: z.boolean().default(true),
+  antiSpamBufferSeconds: z.number().int().positive().max(60).default(3),
+  antiSpamSameChannelRepeatThreshold: z.number().int().min(2).max(25).default(3),
+  antiSpamUniqueChannelsThreshold: z.number().int().min(2).max(25).default(4),
+  antiSpamSimilarityPercent: z.number().int().min(50).max(100).default(95),
+  antiSpamMuteLengthMs: z.number().int().positive().default(60 * 60 * 1000),
+  antiSpamOpenModerationThread: z.boolean().default(true),
+  antiSpamLogDeletedMessages: z.boolean().default(true),
+  antiSpamLoggingChannelId: z.string().min(1).nullable().default(null),
   moderationThreadMessage: z.string().min(1).default("This is the message automatically posted for the user to see when the moderation thread is opened."),
   honeyPotChannelMessage: z.string().min(1).default("This channel is reserved for automated server functions. Any message sent here will automatically trigger a 1-hour timeout.\nIf you're looking for help or wish to chat, please use the appropriate channels.")
 });

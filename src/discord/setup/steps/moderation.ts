@@ -18,7 +18,7 @@ export function buildModerationContainer(phase: string): ContainerBuilder {
       new TextDisplayBuilder().setContent(
         [
           "Moderation Configurations",
-          "Set the moderation timeout and message deletion window used by the automation."
+          "Set the moderation timeout and message deletion window used by automation."
         ].join("\n")
       )
     );
@@ -26,7 +26,7 @@ export function buildModerationContainer(phase: string): ContainerBuilder {
   if (phase === "moderation") {
     container.addActionRowComponents(
       new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
-        new ButtonBuilder().setStyle(ButtonStyle.Success).setLabel("Set-up").setCustomId(setupButtonIds.setModerationConfig),
+          new ButtonBuilder().setStyle(ButtonStyle.Success).setLabel("Set up").setCustomId(setupButtonIds.setModerationConfig),
         new ButtonBuilder().setStyle(ButtonStyle.Primary).setLabel("Next").setCustomId(setupButtonIds.next),
         new ButtonBuilder().setStyle(ButtonStyle.Danger).setLabel("Cancel").setCustomId(setupButtonIds.cancelModeration)
       )
@@ -44,22 +44,22 @@ export function buildModerationConfigModal(config: GuildConfig): ModalBuilder {
     .addLabelComponents(
       new LabelBuilder()
         .setLabel("Message Deletion Window")
-        .setDescription("This is the amount of time the bot will review message to delete when moderating")
+        .setDescription("This is the amount of time the bot will review messages for deletion when moderating.")
         .setStringSelectMenuComponent(
           buildDurationSelect(messageDeletionWindowSelectId, config.messageDeletionWindowMs, [
             {label: "1 Min", value: 60 * 1000},
-            {label: "2 Mins", value: 2 * 60 * 1000},
-            {label: "3 Mins", value: 3 * 60 * 1000},
-            {label: "5 Mins", value: 5 * 60 * 1000},
-            {label: "15 Mins", value: 15 * 60 * 1000},
+            {label: "2 Minutes", value: 2 * 60 * 1000},
+            {label: "3 Minutes", value: 3 * 60 * 1000},
+            {label: "5 Minutes", value: 5 * 60 * 1000},
+            {label: "15 Minutes", value: 15 * 60 * 1000},
             {label: "1 Hour", value: 60 * 60 * 1000}
           ])
         )
     )
     .addLabelComponents(
       new LabelBuilder()
-        .setLabel("DO NOT PING")
-        .setDescription("The roles selected in this section will not be pinged by the bot.")
+        .setLabel("Do Not Ping")
+        .setDescription("The selected roles will not be pinged by the bot.")
         .setRoleSelectMenuComponent(
           buildRoleSelect(moderationNoPingRolesId, config.moderationNoPingRoleIds)
         )
@@ -68,13 +68,13 @@ export function buildModerationConfigModal(config: GuildConfig): ModalBuilder {
   if (config.isHoneyPotChannel) {
     modal.addLabelComponents(
       new LabelBuilder()
-        .setLabel("Time out Length")
-        .setDescription("Set the of time-out length for users who triggering moderation in the honey pot channel.")
+        .setLabel("Timeout Length")
+        .setDescription("Set the timeout length for users who trigger moderation in the honey pot channel.")
         .setStringSelectMenuComponent(
           buildDurationSelect(moderationTimeoutSelectId, config.moderationTimeoutMs, [
-            {label: "60 Secs", value: 60 * 1000},
-            {label: "5 Mins", value: 5 * 60 * 1000},
-            {label: "10 Mins", value: 10 * 60 * 1000},
+            {label: "60 Seconds", value: 60 * 1000},
+            {label: "5 Minutes", value: 5 * 60 * 1000},
+            {label: "10 Minutes", value: 10 * 60 * 1000},
             {label: "1 Hour", value: 60 * 60 * 1000},
             {label: "1 Day", value: 24 * 60 * 60 * 1000},
             {label: "1 Week", value: 7 * 24 * 60 * 60 * 1000}

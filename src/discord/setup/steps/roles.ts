@@ -15,7 +15,7 @@ import {updateWizardMessages} from "../session.js";
 export function buildRolesContainer(phase: string): ContainerBuilder {
   const container = new ContainerBuilder()
     .addTextDisplayComponents(
-      new TextDisplayBuilder().setContent("Welcome to Legatus, moderation bot."),
+      new TextDisplayBuilder().setContent("Welcome to Legatus, the moderation bot."),
       new TextDisplayBuilder().setContent(
         [
           "Restrictions and Permissions",
@@ -49,7 +49,7 @@ export function buildRoleModal(config: GuildConfig): ModalBuilder {
     .addLabelComponents(
       new LabelBuilder()
         .setLabel("Head Moderator Role")
-        .setDescription("These roles will restrict usage of the set-up command for future use.")
+        .setDescription("These roles will restrict use of the setup command in the future.")
         .setRoleSelectMenuComponent(buildRoleSelect(headModeratorRolesId, config.commandRoleIds)),
       new LabelBuilder()
         .setLabel("Moderator Role")
@@ -57,14 +57,14 @@ export function buildRoleModal(config: GuildConfig): ModalBuilder {
         .setRoleSelectMenuComponent(buildRoleSelect(moderatorRolesId, config.respondRoleIds)),
       new LabelBuilder()
         .setLabel("Allowed roles for Moderation Mention")
-        .setDescription("This allows the defined roles to @Legatus replying to a message to trigger moderation action.")
+        .setDescription("This allows the selected roles to trigger a moderation action by replying to a message and mentioning @Legatus.")
         .setRoleSelectMenuComponent(
           buildRoleSelect(moderationMentionRolesId, config.moderationMentionRoleIds)
             .setPlaceholder("If none selected, any user can @legatus")
         ),
       new LabelBuilder()
         .setLabel("Ignored Roles")
-        .setDescription("These roles will be ignored from all moderation actions, but they wont have moderation permissions.")
+        .setDescription("These roles will be ignored by all moderation actions, but they will not receive moderation permissions.")
         .setRoleSelectMenuComponent(buildRoleSelect(ignoredRolesId, config.ignoredRoleIds))
     );
 }
@@ -75,7 +75,7 @@ export function buildJoinLeaveRoleModal(config: GuildConfig): ModalBuilder {
     .setCustomId(joinLeaveRoleModalId)
     .setTitle("Join & Leave")
     .addTextDisplayComponents(
-      new ModalTextDisplayBuilder().setContent("This function is not tied to any other function, and will run regardless of access controls.")
+      new ModalTextDisplayBuilder().setContent("This function is not tied to access controls and will run regardless of them.")
     )
     .addLabelComponents(
       new LabelBuilder()

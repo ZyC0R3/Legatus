@@ -1,6 +1,6 @@
 {
   "name": "legatus",
-  "version": "1.0.14",
+  "version": "1.0.16",
   "private": true,
   "type": "module",
   "description": "Legatus is a TypeScript Discord moderation bot built without a database.",

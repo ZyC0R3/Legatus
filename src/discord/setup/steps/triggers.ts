@@ -26,7 +26,7 @@ export function buildTriggersContainer(phase: string): ContainerBuilder {
   if (phase === "triggers") {
     container.addActionRowComponents(
       new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
-        new ButtonBuilder().setStyle(ButtonStyle.Success).setLabel("Set-up").setCustomId(setupButtonIds.setTriggerMessages),
+        new ButtonBuilder().setStyle(ButtonStyle.Success).setLabel("Set up").setCustomId(setupButtonIds.setTriggerMessages),
         new ButtonBuilder().setStyle(ButtonStyle.Success).setLabel("Save").setCustomId(setupButtonIds.next),
         new ButtonBuilder().setStyle(ButtonStyle.Danger).setLabel("Cancel").setCustomId(setupButtonIds.cancelTriggers)
       )
@@ -43,8 +43,8 @@ export function buildTriggerMessagesModal(config: GuildConfig): ModalBuilder {
     .setTitle("Trigger Messages")
     .addLabelComponents(
       new LabelBuilder()
-        .setLabel("Message posted in Moderation thread.")
-        .setDescription("This is the message automatically posted for the user to see when the moderation thread is opened.")
+        .setLabel("Message posted in moderation thread")
+        .setDescription("This is the message automatically posted for the user to see when the moderation thread opens.")
         .setTextInputComponent(
           new TextInputBuilder()
             .setCustomId(moderationThreadMessageId)
@@ -57,7 +57,7 @@ export function buildTriggerMessagesModal(config: GuildConfig): ModalBuilder {
     modal.addLabelComponents(
       new LabelBuilder()
         .setLabel("Honey Pot Channel Message")
-        .setDescription("This message will be posted at the top of the honey pot channel. Designed for humans to read.")
+        .setDescription("This message will be posted at the top of the honey pot channel for humans to read.")
         .setTextInputComponent(
           new TextInputBuilder()
             .setCustomId(honeyPotChannelMessageId)
