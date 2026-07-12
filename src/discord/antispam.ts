@@ -3,7 +3,7 @@
  * Purpose: Coordinates this part of the Legatus bot flow.
  */
 import {ActionRowBuilder, ButtonBuilder, ButtonStyle, ContainerBuilder, MessageFlags, TextDisplayBuilder, TextInputStyle, type ButtonInteraction, type ChatInputCommandInteraction, type GuildTextBasedChannel, type Message, type ModalSubmitInteraction} from "discord.js";
-import {ChannelSelectMenuBuilder, LabelBuilder, ModalBuilder, TextInputBuilder} from "@discordjs/builders";
+import {ChannelSelectMenuBuilder, LabelBuilder, ModalBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, TextInputBuilder} from "@discordjs/builders";
 import type {BotConfig, GuildConfig} from "../config/schema.js";
 import {applyGuildSetupConfig, resolveGuildConfig, saveBotConfig} from "../config/store.js";
 import {boundedLevenshtein} from "../moderation/bk-tree.js";
@@ -32,6 +32,13 @@ const antiSpamFieldIds = {
   openThread: "ca0750cc6dcb45af9a43f937b2ff95a8",
   logDeletedMessages: "106094d590a24b34a41ee9c6b0b4385a",
   logChannel: "613f50142c6749599b89cb275c5c25cc"
+} as const;
+
+const antiSpamSelectValues = {
+  openThreadYes: "2fe1278418e74886942ee3e1b178b3cc",
+  openThreadNo: "ab037128bee94b6181671ddcb289c6bf",
+  logDeletedMessagesYes: "8507bc9008fe47ebbe4763a81fce6334",
+  logDeletedMessagesNo: "7e83d830ba274fc5895475199a83b327"
 } as const;
 
 const antiSpamDefaultMuteOptions: Array<{label: string; durationMs: number}> = [
@@ -166,25 +173,38 @@ function buildAntiSpamLoggingModal(config: GuildConfig): ModalBuilder {
     .addLabelComponents(
       new LabelBuilder()
         .setLabel("Open moderation thread")
-        .setDescription("Type yes or no.")
-        .setTextInputComponent(
-          new TextInputBuilder()
+        .setStringSelectMenuComponent(
+          new StringSelectMenuBuilder()
             .setCustomId(antiSpamFieldIds.openThread)
-            .setStyle(TextInputStyle.Short)
-            .setValue(config.antiSpamOpenModerationThread ? "yes" : "no")
-            .setRequired(true)
+            .addOptions(
+              new StringSelectMenuOptionBuilder()
+                .setLabel("Yes")
+                .setValue(antiSpamSelectValues.openThreadYes)
+                .setDefault(config.antiSpamOpenModerationThread === true),
+              new StringSelectMenuOptionBuilder()
+                .setLabel("No")
+                .setValue(antiSpamSelectValues.openThreadNo)
+                .setDefault(config.antiSpamOpenModerationThread === false)
+            )
         )
     )
     .addLabelComponents(
       new LabelBuilder()
         .setLabel("Log deleted messages")
-        .setDescription("If enabled, anti-spam actions will be logged to the selected channel.")
-        .setTextInputComponent(
-          new TextInputBuilder()
+        .setDescription("Log a copy of each deleted spam message. This may create many log entries.")
+        .setStringSelectMenuComponent(
+          new StringSelectMenuBuilder()
             .setCustomId(antiSpamFieldIds.logDeletedMessages)
-            .setStyle(TextInputStyle.Short)
-            .setValue(config.antiSpamLogDeletedMessages ? "yes" : "no")
-            .setRequired(true)
+            .addOptions(
+              new StringSelectMenuOptionBuilder()
+                .setLabel("Yes")
+                .setValue(antiSpamSelectValues.logDeletedMessagesYes)
+                .setDefault(config.antiSpamLogDeletedMessages === true),
+              new StringSelectMenuOptionBuilder()
+                .setLabel("No")
+                .setValue(antiSpamSelectValues.logDeletedMessagesNo)
+                .setDefault(config.antiSpamLogDeletedMessages === false)
+            )
         )
     )
     .addLabelComponents(
@@ -285,8 +305,14 @@ export async function handleAntiSpamModal(interaction: ModalSubmitInteraction, b
       }
     : {
         antiSpamMuteLengthMs: Number(interaction.fields.getStringSelectValues(antiSpamFieldIds.muteLength)[0] ?? String(currentConfig.antiSpamMuteLengthMs)),
-        antiSpamOpenModerationThread: parseYesNoSelection(interaction.fields.getTextInputValue(antiSpamFieldIds.openThread), "no"),
-        antiSpamLogDeletedMessages: parseYesNoSelection(interaction.fields.getStringSelectValues(antiSpamFieldIds.logDeletedMessages)[0], "no"),
+        antiSpamOpenModerationThread: parseYesNoSelection(
+          interaction.fields.getStringSelectValues(antiSpamFieldIds.openThread)[0],
+          antiSpamSelectValues.openThreadNo
+        ),
+        antiSpamLogDeletedMessages: parseYesNoSelection(
+          interaction.fields.getStringSelectValues(antiSpamFieldIds.logDeletedMessages)[0],
+          antiSpamSelectValues.logDeletedMessagesNo
+        ),
         antiSpamLoggingChannelId: selectedChannelId(interaction.fields.getSelectedChannels(antiSpamFieldIds.logChannel, false))
       };
 

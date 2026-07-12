@@ -5,7 +5,7 @@
 import {MessageFlags, SlashCommandBuilder, type ChatInputCommandInteraction} from "discord.js";
 import type {BotConfig} from "../config/schema.js";
 import {applyGuildSetupConfig, saveBotConfig} from "../config/store.js";
-import {showAntiSpamPanel} from "../discord/antispam.js";
+import {showAntiSpamPanel} from "../discord/antispam-panel.js";
 
 export const antispamCommand = {
   data: new SlashCommandBuilder()
