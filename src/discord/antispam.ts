@@ -76,6 +76,25 @@ function clampInt(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, rounded));
 }
 
+// pruneAntiSpamState defines this module's public behavior or core flow.
+function pruneAntiSpamState(now: number, retentionMs: number): void {
+  for (const [key, entries] of antiSpamBuffers.entries()) {
+    const recentEntries = entries.filter((entry) => now - entry.createdTimestamp <= retentionMs);
+    if (recentEntries.length === 0) {
+      antiSpamBuffers.delete(key);
+      continue;
+    }
+
+    antiSpamBuffers.set(key, recentEntries);
+  }
+
+  for (const [key, cooldownUntil] of antiSpamCooldowns.entries()) {
+    if (cooldownUntil <= now) {
+      antiSpamCooldowns.delete(key);
+    }
+  }
+}
+
 // buildAntiSpamPanel defines this module's public behavior or core flow.
 function buildAntiSpamPanel(): ContainerBuilder {
   return new ContainerBuilder()
@@ -190,8 +209,8 @@ function buildAntiSpamLoggingModal(config: GuildConfig): ModalBuilder {
     )
     .addLabelComponents(
       new LabelBuilder()
-        .setLabel("Log deleted messages")
-        .setDescription("Log a copy of each deleted spam message. This may create many log entries.")
+        .setLabel("Log anti-spam actions")
+        .setDescription("Send anti-spam action summaries to the selected log channel.")
         .setStringSelectMenuComponent(
           new StringSelectMenuBuilder()
             .setCustomId(antiSpamFieldIds.logDeletedMessages)
@@ -450,6 +469,9 @@ export async function handleAntiSpamMessage(message: Message, config: GuildConfi
   const thresholdPercent = clampInt(config.antiSpamSimilarityPercent, 50, 100);
   const channelThreshold = clampInt(config.antiSpamUniqueChannelsThreshold, 2, 25);
   const sameChannelThreshold = clampInt(config.antiSpamSameChannelRepeatThreshold, 2, 25);
+  const cleanupWindowMs = bufferMs + antiSpamCleanupGraceMs;
+
+  pruneAntiSpamState(now, cleanupWindowMs);
 
   const recentEntries = (antiSpamBuffers.get(key) ?? []).filter((entry) => now - entry.createdTimestamp <= bufferMs);
 
@@ -483,7 +505,6 @@ export async function handleAntiSpamMessage(message: Message, config: GuildConfi
     ? `cross-channel threshold (${matchedChannelIds.size}/${channelThreshold})`
     : `same-channel repeat threshold (${matchedInCurrentChannel}/${sameChannelThreshold})`;
 
-  const cleanupWindowMs = bufferMs + antiSpamCleanupGraceMs;
   const cleanupEntries = (antiSpamBuffers.get(key) ?? [])
     .filter((entry) => now - entry.createdTimestamp <= cleanupWindowMs)
     .filter((entry) => similarityPercent(signature, entry.signature) >= thresholdPercent)
@@ -517,7 +538,11 @@ export async function handleAntiSpamMessage(message: Message, config: GuildConfi
     }
   }
 
-  const timedOut = await message.member.timeout(config.antiSpamMuteLengthMs, "Anti-spam burst detection").then(() => true).catch(() => false);
+  const targetMember = message.guild.members.cache.get(message.author.id)
+    ?? await message.guild.members.fetch(message.author.id).catch(() => null);
+  const timedOut = targetMember
+    ? await targetMember.timeout(config.antiSpamMuteLengthMs, "Anti-spam burst detection").then(() => true).catch(() => false)
+    : false;
 
   if (config.antiSpamOpenModerationThread) {
     await openAntiSpamModerationThread(message, config, matchedChannelIds.size, cleanupEntries.length, triggerReason);

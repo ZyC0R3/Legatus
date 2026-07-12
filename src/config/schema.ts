@@ -87,10 +87,14 @@ export interface GuildConfig {
   honeyPotChannelMessage: string;
 }
 
+export type GuildOverrideConfig = {
+  [Key in keyof GuildConfig]?: GuildConfig[Key] | undefined;
+};
+
 export interface BotConfig {
   version: 1;
   global: GuildConfig;
-  guilds: Record<string, GuildConfig>;
+  guilds: Record<string, GuildOverrideConfig>;
 }
 
 export const defaultGuildConfig: GuildConfig = {
@@ -262,7 +266,7 @@ export const guildConfigSchema = z.object({
 export const botConfigSchema = z.object({
   version: z.literal(1).default(1),
   global: guildConfigSchema.default(defaultGuildConfig),
-  guilds: z.record(z.string(), guildConfigSchema).default({})
+  guilds: z.record(z.string(), guildConfigSchema.partial()).default({})
 });
 
 export const defaultBotConfig: BotConfig = {

@@ -89,15 +89,31 @@ const loggingValues = {
 type ProfanitySession = {
   messageId: string;
   termsCompleted: boolean;
+  expiresAt: number;
 };
 
 type ProfanityLevel = "low" | "medium" | "high" | "critical";
 
 const profanitySessions = new Map<string, ProfanitySession>();
+const profanitySessionTtlMs = 15 * 60 * 1000;
 
 // profanitySessionKey defines this module's public behavior or core flow.
 function profanitySessionKey(guildId: string, userId: string): string {
   return `${guildId}:${userId}`;
+}
+
+// nextProfanitySessionExpiry defines this module's public behavior or core flow.
+function nextProfanitySessionExpiry(now = Date.now()): number {
+  return now + profanitySessionTtlMs;
+}
+
+// pruneExpiredProfanitySessions defines this module's public behavior or core flow.
+function pruneExpiredProfanitySessions(now = Date.now()): void {
+  for (const [key, session] of profanitySessions.entries()) {
+    if (session.expiresAt <= now) {
+      profanitySessions.delete(key);
+    }
+  }
 }
 
 // capitalize defines this module's public behavior or core flow.
@@ -669,6 +685,7 @@ function isProfanityModal(customId: string): boolean {
 
 // postProfanityPanel defines this module's public behavior or core flow.
 export async function postProfanityPanel(interaction: ChatInputCommandInteraction, botConfig?: BotConfig): Promise<void> {
+  pruneExpiredProfanitySessions();
   await interaction.reply({
     components: buildTermsOnlyComponents(),
     flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral
@@ -679,7 +696,8 @@ export async function postProfanityPanel(interaction: ChatInputCommandInteractio
     const panelMessage = await interaction.fetchReply();
     profanitySessions.set(profanitySessionKey(interaction.guildId, interaction.user.id), {
       messageId: panelMessage.id,
-      termsCompleted: config ? hasConfiguredTerms(config) : false
+      termsCompleted: config ? hasConfiguredTerms(config) : false,
+      expiresAt: nextProfanitySessionExpiry()
     });
   }
 }
@@ -697,17 +715,23 @@ export async function handleProfanityButton(interaction: ButtonInteraction, botC
 
   const config = resolveGuildConfig(botConfig, interaction.guildId);
   const key = profanitySessionKey(interaction.guildId, interaction.user.id);
+  pruneExpiredProfanitySessions();
   let session = profanitySessions.get(key);
   const configured = hasConfiguredTerms(config);
 
   if (!session || session.messageId !== interaction.message.id) {
     session = {
       messageId: interaction.message.id,
-      termsCompleted: configured
+      termsCompleted: configured,
+      expiresAt: nextProfanitySessionExpiry()
     };
     profanitySessions.set(key, session);
   } else if (configured && !session.termsCompleted) {
     session.termsCompleted = true;
+  }
+
+  if (session) {
+    session.expiresAt = nextProfanitySessionExpiry();
   }
 
   if (interaction.customId === profanityButtonIds.definedTerms) {
@@ -788,6 +812,7 @@ export async function handleProfanityButton(interaction: ButtonInteraction, botC
     const finalConfig = resolveGuildConfig(botConfig, interaction.guildId);
     await interaction.deferUpdate();
     await interaction.deleteReply().catch(() => undefined);
+    profanitySessions.delete(key);
     await interaction.followUp({
       embeds: [buildProfanitySummaryEmbed(finalConfig)],
       flags: MessageFlags.Ephemeral
@@ -807,6 +832,8 @@ export async function handleProfanityModal(interaction: ModalSubmitInteraction, 
   if (!isProfanityModal(interaction.customId)) {
     return false;
   }
+
+  pruneExpiredProfanitySessions();
 
   if (!interaction.inGuild()) {
     await interaction.reply({
@@ -832,6 +859,7 @@ export async function handleProfanityModal(interaction: ModalSubmitInteraction, 
     const session = profanitySessions.get(profanitySessionKey(interaction.guildId, interaction.user.id));
     if (session) {
       session.termsCompleted = true;
+      session.expiresAt = nextProfanitySessionExpiry();
     }
 
     await interaction.deferUpdate();

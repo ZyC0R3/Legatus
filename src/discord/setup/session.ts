@@ -3,11 +3,26 @@
  * Purpose: Coordinates this part of the Legatus bot flow.
  */
 import {type Client, MessageFlags, type ButtonInteraction, type ModalSubmitInteraction, ContainerBuilder, TextDisplayBuilder} from "discord.js";
-import type {BotConfig, GuildConfig} from "../../config/schema.js";
+import type {BotConfig, GuildOverrideConfig} from "../../config/schema.js";
 import {saveBotConfig} from "../../config/store.js";
 import type {SetupSession} from "./types.js";
 
 const setupSessions = new Map<string, SetupSession>();
+const setupSessionTtlMs = 15 * 60 * 1000;
+
+// nextSetupSessionExpiry defines this module's public behavior or core flow.
+function nextSetupSessionExpiry(now = Date.now()): number {
+  return now + setupSessionTtlMs;
+}
+
+// pruneExpiredSetupSessions defines this module's public behavior or core flow.
+function pruneExpiredSetupSessions(now = Date.now()): void {
+  for (const [key, session] of setupSessions.entries()) {
+    if (session.expiresAt <= now) {
+      setupSessions.delete(key);
+    }
+  }
+}
 
 // setupSessionKey defines this module's public behavior or core flow.
 export function setupSessionKey(guildId: string, userId: string): string {
@@ -15,17 +30,26 @@ export function setupSessionKey(guildId: string, userId: string): string {
 }
 
 // cloneGuildConfig defines this module's public behavior or core flow.
-export function cloneGuildConfig(config: GuildConfig): GuildConfig {
+export function cloneGuildConfig<T extends GuildOverrideConfig | null>(config: T): T {
   return structuredClone(config);
 }
 
 // getSetupSession defines this module's public behavior or core flow.
 export function getSetupSession(guildId: string, userId: string): SetupSession | null {
-  return setupSessions.get(setupSessionKey(guildId, userId)) ?? null;
+  pruneExpiredSetupSessions();
+  const session = setupSessions.get(setupSessionKey(guildId, userId)) ?? null;
+  if (!session) {
+    return null;
+  }
+
+  session.expiresAt = nextSetupSessionExpiry();
+  return session;
 }
 
 // setSetupSession defines this module's public behavior or core flow.
 export function setSetupSession(guildId: string, userId: string, session: SetupSession): void {
+  pruneExpiredSetupSessions();
+  session.expiresAt = nextSetupSessionExpiry();
   setupSessions.set(setupSessionKey(guildId, userId), session);
 }
 
@@ -80,6 +104,7 @@ export async function updateWizardMessages(
   session: SetupSession,
   components: ContainerBuilder[]
 ): Promise<void> {
+  session.expiresAt = nextSetupSessionExpiry();
   await interaction.webhook.editMessage(session.wizardMessageId, {
     components,
     flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2

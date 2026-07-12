@@ -4,9 +4,21 @@
  */
 import {mkdir, readFile, writeFile} from "node:fs/promises";
 import {dirname, join} from "node:path";
-import {botConfigSchema, defaultBotConfig, type BotConfig, type GuildConfig} from "./schema.js";
+import {isDeepStrictEqual} from "node:util";
+import {botConfigSchema, defaultBotConfig, type BotConfig, type GuildConfig, type GuildOverrideConfig} from "./schema.js";
 
 const configFilePath = join(process.cwd(), "data", "config.json");
+let pendingSave: Promise<void> = Promise.resolve();
+
+const mergedListKeys = [
+  "commandRoleIds",
+  "respondRoleIds",
+  "moderationMentionRoleIds",
+  "moderationNoPingRoleIds",
+  "ignoredRoleIds",
+  "ignoredUserIds",
+  "messageTriggers"
+] as const satisfies ReadonlyArray<keyof GuildConfig>;
 
 // mergeLists defines this module's public behavior or core flow.
 function mergeLists(...lists: Array<readonly string[]>): string[] {
@@ -24,13 +36,13 @@ export function resolveGuildConfig(config: BotConfig, guildId: string): GuildCon
   }
 
   return {
-    commandRoleIds: mergeLists(config.global.commandRoleIds, guildConfig.commandRoleIds),
-    respondRoleIds: mergeLists(config.global.respondRoleIds, guildConfig.respondRoleIds),
-    moderationMentionRoleIds: mergeLists(config.global.moderationMentionRoleIds, guildConfig.moderationMentionRoleIds),
+    commandRoleIds: mergeLists(config.global.commandRoleIds, guildConfig.commandRoleIds ?? []),
+    respondRoleIds: mergeLists(config.global.respondRoleIds, guildConfig.respondRoleIds ?? []),
+    moderationMentionRoleIds: mergeLists(config.global.moderationMentionRoleIds, guildConfig.moderationMentionRoleIds ?? []),
     joinRoleId: guildConfig.joinRoleId ?? config.global.joinRoleId,
-    moderationNoPingRoleIds: mergeLists(config.global.moderationNoPingRoleIds, guildConfig.moderationNoPingRoleIds),
-    ignoredRoleIds: mergeLists(config.global.ignoredRoleIds, guildConfig.ignoredRoleIds),
-    ignoredUserIds: mergeLists(config.global.ignoredUserIds, guildConfig.ignoredUserIds),
+    moderationNoPingRoleIds: mergeLists(config.global.moderationNoPingRoleIds, guildConfig.moderationNoPingRoleIds ?? []),
+    ignoredRoleIds: mergeLists(config.global.ignoredRoleIds, guildConfig.ignoredRoleIds ?? []),
+    ignoredUserIds: mergeLists(config.global.ignoredUserIds, guildConfig.ignoredUserIds ?? []),
     accessPasswordPhrase: guildConfig.accessPasswordPhrase ?? config.global.accessPasswordPhrase,
     accessPasswordRoleId: guildConfig.accessPasswordRoleId ?? config.global.accessPasswordRoleId,
     accessPasswordRemoveRoleId: guildConfig.accessPasswordRemoveRoleId ?? config.global.accessPasswordRemoveRoleId,
@@ -54,7 +66,7 @@ export function resolveGuildConfig(config: BotConfig, guildId: string): GuildCon
     profanityRules: guildConfig.profanityRules ?? config.global.profanityRules,
     profanityCleanup: guildConfig.profanityCleanup ?? config.global.profanityCleanup,
     profanityLogging: guildConfig.profanityLogging ?? config.global.profanityLogging,
-    messageTriggers: mergeLists(config.global.messageTriggers, guildConfig.messageTriggers),
+    messageTriggers: mergeLists(config.global.messageTriggers, guildConfig.messageTriggers ?? []),
     mentionRepliesEnabled: guildConfig.mentionRepliesEnabled ?? config.global.mentionRepliesEnabled,
     moderationChannelId: guildConfig.moderationChannelId ?? config.global.moderationChannelId,
     moderationCategoryId: guildConfig.moderationCategoryId ?? config.global.moderationCategoryId,
@@ -76,6 +88,35 @@ export function resolveGuildConfig(config: BotConfig, guildId: string): GuildCon
   };
 }
 
+// deriveGuildOverrides defines this module's public behavior or core flow.
+function deriveGuildOverrides(globalConfig: GuildConfig, resolvedConfig: GuildConfig): GuildOverrideConfig {
+  const overrides: GuildOverrideConfig = {};
+  const mutableOverrides = overrides as Record<keyof GuildConfig, GuildConfig[keyof GuildConfig] | undefined>;
+
+  for (const key of mergedListKeys) {
+    const globalValues = globalConfig[key] as string[];
+    const resolvedValues = resolvedConfig[key] as string[];
+    const guildOnlyValues = resolvedValues.filter((value) => !globalValues.includes(value));
+    if (guildOnlyValues.length > 0) {
+      mutableOverrides[key] = guildOnlyValues as GuildConfig[typeof key];
+    }
+  }
+
+  for (const key of Object.keys(resolvedConfig) as Array<keyof GuildConfig>) {
+    if ((mergedListKeys as readonly string[]).includes(key)) {
+      continue;
+    }
+
+    const resolvedValue = resolvedConfig[key];
+    const globalValue = globalConfig[key];
+    if (!isDeepStrictEqual(resolvedValue, globalValue)) {
+      mutableOverrides[key] = structuredClone(resolvedValue) as GuildConfig[typeof key];
+    }
+  }
+
+  return overrides;
+}
+
 // getGuildSetupConfig defines this module's public behavior or core flow.
 export function getGuildSetupConfig(config: BotConfig, guildId: string | null): GuildConfig {
   return guildId ? resolveGuildConfig(config, guildId) : config.global;
@@ -92,7 +133,13 @@ export function applyGuildSetupConfig(config: BotConfig, guildId: string | null,
     ...patch
   };
 
-  config.guilds[guildId] = nextConfig;
+  const guildOverrides = deriveGuildOverrides(config.global, nextConfig);
+  if (Object.keys(guildOverrides).length === 0) {
+    delete config.guilds[guildId];
+  } else {
+    config.guilds[guildId] = guildOverrides;
+  }
+
   return nextConfig;
 }
 
@@ -122,5 +169,11 @@ export async function loadBotConfig(): Promise<BotConfig> {
 
 // saveBotConfig defines this module's public behavior or core flow.
 export async function saveBotConfig(config: BotConfig): Promise<void> {
-  await writeConfigFile(botConfigSchema.parse(config));
+  const parsedConfig = botConfigSchema.parse(config);
+  const writeTask = pendingSave.catch(() => undefined).then(async () => {
+    await writeConfigFile(parsedConfig);
+  });
+
+  pendingSave = writeTask;
+  await writeTask;
 }

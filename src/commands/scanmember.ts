@@ -97,6 +97,13 @@ export const scanmembersCommand = {
         ? rawBitfield
         : BigInt(rawBitfield ?? 0);
       const matchedFlags = resolveMatchedFlags(userFlagsBitfield);
+
+      if (scannedCount % 15 === 0 || scannedCount === totalMembers) {
+        void interaction.editReply({
+          content: `Scanning in progress ${scannedCount}/${totalMembers}`
+        }).catch(() => undefined);
+      }
+
       if (matchedFlags.length === 0) {
         continue;
       }
@@ -105,12 +112,6 @@ export const scanmembersCommand = {
         userId: member.id,
         matchedFlags
       });
-
-      if (scannedCount % 15 === 0 || scannedCount === totalMembers) {
-        void interaction.editReply({
-          content: `Scanning in progress ${scannedCount}/${totalMembers}`
-        }).catch(() => undefined);
-      }
     }
 
     if (matches.length === 0) {

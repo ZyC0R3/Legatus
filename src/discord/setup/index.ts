@@ -48,7 +48,8 @@ export async function startSetupWizard(interaction: ChatInputCommandInteraction,
     originalGuildConfig,
     createdChannelIds: [],
     phase: "roles",
-    wizardMessageId: setupMessage.id
+    wizardMessageId: setupMessage.id,
+    expiresAt: 0
   });
 }
 

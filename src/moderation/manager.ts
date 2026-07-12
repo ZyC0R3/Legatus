@@ -3,6 +3,7 @@
  * Purpose: Coordinates this part of the Legatus bot flow.
  */
 import {type BotConfig, type GuildConfig} from "../config/schema.js";
+import {resolveGuildConfig} from "../config/store.js";
 import {buildModerationEngine, type ModerationEngine} from "./engine.js";
 import {type ModerationDetectionResult, severityDescending} from "./types.js";
 
@@ -34,7 +35,8 @@ export class ModerationEngineManager {
       engine: buildModerationEngine(botConfig.global)
     });
 
-    for (const [guildId, guildConfig] of Object.entries(botConfig.guilds)) {
+    for (const guildId of Object.keys(botConfig.guilds)) {
+      const guildConfig = resolveGuildConfig(botConfig, guildId);
       const fingerprint = buildConfigFingerprint(guildConfig);
       this.cache.set(guildId, {
         fingerprint,
